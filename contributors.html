@@ -1,0 +1,210 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>&lt;no title&gt; &#8212; LiberTEM 0.2.0.dev0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <dl class="simple">
+<dt><strong>&#64;theassassin</strong></dt><dd><p>Help with setting up AppImage building and Continuous Integration</p>
+</dd>
+<dt><strong>Juri Barthel (FZ Jülich)</strong></dt><dd><p>Discussions, compatibility with Dr. Probe</p>
+</dd>
+<dt><strong>Reimar Bauer (FZ Jülich)</strong></dt><dd><p>Help with Google Summer of Code 2019</p>
+</dd>
+<dt><strong>Julian Becker (X-Spectrum)</strong></dt><dd><p>Discussions, system design, funding applications</p>
+</dd>
+<dt><strong>Andreas Beckmann (X-Spectrum)</strong></dt><dd><p>Discussions, system design, funding applications</p>
+</dd>
+<dt><strong>Robert Bücker (MPSD)</strong></dt><dd><p>Discussions, sample files</p>
+</dd>
+<dt><strong>Peter Ercius (Berkeley Lab)</strong></dt><dd><p>Re-licensing <a class="reference external" href="https://github.com/ercius/openNCEM/">ncempy</a> under MIT license to allow using it in the IO part of LiberTEM, enabling full K2IS raw file and SER support.</p>
+</dd>
+<dt><strong>Caroline Fuery (Microscopy Australia)</strong></dt><dd><p>Discussions, supporting deployment on Australian eResearch infrastructure</p>
+</dd>
+<dt><strong>Patrick Furhmann (DESY)</strong></dt><dd><p>Discussions, system architecture</p>
+</dd>
+<dt><strong>Wojtek James Goscinski (Monash)</strong></dt><dd><p>Discussions, supporting deployment on Australian eResearch infrastructure</p>
+</dd>
+<dt><strong>Chris Hines (Monash)</strong></dt><dd><p>Discussions, supporting deployment on Australian eResearch infrastructure</p>
+</dd>
+<dt><strong>Lothar Houben (Weizmann)</strong></dt><dd><p>Discussions</p>
+</dd>
+<dt><strong>Martin Huth (PNDetector)</strong></dt><dd><p>Discussions, sample files, documentation for implementing FRMS6 support</p>
+</dd>
+<dt><strong>Pete Jemian (NeXus project)</strong></dt><dd><p>Discussions and support regarding NeXus file format</p>
+</dd>
+<dt><strong>Christoph Koch (HU Berlin)</strong></dt><dd><p>Discussions</p>
+</dd>
+<dt><strong>Alexander Krings (FZ Jülich)</strong></dt><dd><p>Discussions, requirements description</p>
+</dd>
+<dt><strong>Weng I Lei (Gatan)</strong></dt><dd><p>Discussions, Python support in GMS</p>
+</dd>
+<dt><strong>Penghan Lu (FZ Jülich)</strong></dt><dd><p>Scientific advisory, discussion, sample data</p>
+</dd>
+<dt><strong>Ian MacLaren (U Glasgow)</strong></dt><dd><p>Sample data for peak selector example, discussions, advisory</p>
+</dd>
+<dt><strong>Shane McCartan (U Glasgow)</strong></dt><dd><p>Sample data for peak selector example</p>
+</dd>
+<dt><strong>Heide Meissner (HZDR)</strong></dt><dd><p>Discussions, funding applications</p>
+</dd>
+<dt><strong>Vadim Migunov (FZ Jülich)</strong></dt><dd><p>Scientific advisory, discussion, sample data</p>
+</dd>
+<dt><strong>Grigore Moldovan (Point Electronic)</strong></dt><dd><p>Discussions</p>
+</dd>
+<dt><strong>Knut Müller-Caspary (FZ Jülich)</strong></dt><dd><p>Scientific advisory, discussion, sample data regarding strain mapping, sample code for MIB reader</p>
+</dd>
+<dt><strong>Eduardo Nebot (Quantum Detectors)</strong></dt><dd><p>Support, discussions, sample files, funding applications</p>
+</dd>
+<dt><strong>Magnus Nord (U Antwerp)</strong></dt><dd><p>Discussions, tests, code in related projects</p>
+</dd>
+<dt><strong>Liam O’Ryan (Quantum Detectors)</strong></dt><dd><p>Support, discussions, sample files, funding applications</p>
+</dd>
+<dt><strong>Colin Ophus (Lawrence Berkeley National Lab)</strong></dt><dd><p>Discussions, sample code for K2 reader, overview of related projects</p>
+</dd>
+<dt><strong>Ana Pakzad (Gatan)</strong></dt><dd><p>Discussions, support for implementing K2 raw file format</p>
+</dd>
+<dt><strong>Francisco de la Peña (Lille)</strong></dt><dd><p>Discussions</p>
+</dd>
+<dt><strong>Tobias Richter (NeXus project)</strong></dt><dd><p>Discussions and support regarding NeXus file format</p>
+</dd>
+<dt><strong>Robert Ritz (PNDetector)</strong></dt><dd><p>Discussions, sample files, documentation for implementing FRMS6 support</p>
+</dd>
+<dt><strong>Kunt Sander (DESY)</strong></dt><dd><p>Discussions, system architecture</p>
+</dd>
+<dt><strong>Michael Schuh (DESY)</strong></dt><dd><p>Discussions, system architecture</p>
+</dd>
+<dt><strong>Martin Simson (PNDetector)</strong></dt><dd><p>Discussions, sample files, documentation for implementing FRMS6 support</p>
+</dd>
+<dt><strong>Andy Stewart (U Limerick)</strong></dt><dd><p>Discussions</p>
+</dd>
+<dt><strong>Murali Sukumaran (HZM)</strong></dt><dd><p>Discussions, funding applications</p>
+</dd>
+<dt><strong>Eugene Sweeney (Iambic Innovation)</strong></dt><dd><p>Discussions, proposal review</p>
+</dd>
+<dt><strong>Jo Verbeeck (U Antwerp)</strong></dt><dd><p>Open data <a class="reference external" href="https://zenodo.org/record/2566137">https://zenodo.org/record/2566137</a></p>
+</dd>
+<dt><strong>Paul Voyles (U Wisconsin)</strong></dt><dd><p>Discussions</p>
+</dd>
+<dt><strong>Roger Wepf (U Queensland)</strong></dt><dd><p>Discussions, supporting deployment on Australian eResearch infrastructure</p>
+</dd>
+<dt><strong>Jacob Wilbrink (Gatan)</strong></dt><dd><p>Discussions, support for implementing K2 raw file format</p>
+</dd>
+<dt><strong>Lance Wilson (Monash)</strong></dt><dd><p>Discussions, supporting deployment on Australian eResearch infrastructure</p>
+</dd>
+<dt><strong>Florian Winkler (FZ Jülich)</strong></dt><dd><p>Discussions, requirements description</p>
+</dd>
+<dt><strong>Markus Wollgarten (HZB)</strong></dt><dd><p>Discussions, funding applications</p>
+</dd>
+<dt><strong>Wolfgang zu Castell (HZM)</strong></dt><dd><p>Discussions, funding applications</p>
+</dd>
+</dl>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgments.html">Acknowledgments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="citing.html">Citing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="debugging.html">Debugging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="why_python.html">Why Python?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gsoc.html">GSoC 2019 ideas</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, LiberTEM Authors.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/contributors.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

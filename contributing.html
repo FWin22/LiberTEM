@@ -1,0 +1,423 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Contributing &#8212; LiberTEM 0.2.0.dev0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Acknowledgments" href="acknowledgments.html" />
+    <link rel="prev" title="Architecture" href="architecture.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="contributing">
+<h1>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">¶</a></h1>
+<p>TODO: introduction</p>
+<p>Our code is hosted <a class="reference external" href="https://github.com/libertem/libertem/">on GitHub</a>, and we are using
+<a class="reference external" href="https://help.github.com/en/articles/about-pull-requests">pull requests</a> to accept contributions.</p>
+<p>Each pull request should focus on a single issue, to keep the number of changes small and reviewable.
+To keep your changes organized and to prevent unrelated changes from disturbing your pull request,
+create a new branch for each pull request.</p>
+<p>Before creating a pull request, please make sure all tests still pass. See <a class="reference internal" href="#running-the-tests">Running the Tests</a> for more
+information. You should also update the test suite and add test cases for your contribution. See the section
+<a class="reference internal" href="#code-coverage">Code coverage</a> below on how to check if your new code is covered by tests.</p>
+<p>To make sure our code base stays readable, we have follow a <a class="reference internal" href="#code-style">Code Style</a>.</p>
+<p>Please update <code class="docutils literal notranslate"><span class="pre">packaging/creators.json</span></code> with your author information when you contribute to LiberTEM for the first time. This helps us to keep track of all contributors and give credit where credit is due! Please let us know if you wouldn’t like to be credited. <code class="docutils literal notranslate"><span class="pre">contributors.rst</span></code> and  <code class="docutils literal notranslate"><span class="pre">creators.rst</span></code> in <code class="docutils literal notranslate"><span class="pre">docs/source</span></code> are generated from the JSON files with <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">scripts/build-authors-contributors</span></code>.</p>
+<p>If you are changing parts of LiberTEM that are currently not covered by tests, please consider writing
+new tests! When changing example code, which is not run as part of the tests, make sure the example
+still runs.</p>
+<p>When you have submitted your pull request, someone from the LiberTEM organization will review your
+pull request, and may add comments or ask questions. If everything is good to go, your changes will
+be merged and you can delete the branch you created for the pull request.</p>
+<p>See also the <a class="reference external" href="https://guides.github.com/introduction/flow/">Guide on understanding the GitHub flow</a>.</p>
+<div class="section" id="running-the-tests">
+<h2>Running the Tests<a class="headerlink" href="#running-the-tests" title="Permalink to this headline">¶</a></h2>
+<p>Our tests are written using pytest. For running them in a repeatable manner, we are using tox.
+Tox automatically manages virtualenvs and allows testing on different Python versions and interpreter
+implementations.</p>
+<p>This makes sure that you can run the tests locally the same way as they are run in continuous integration.</p>
+<p>After <a class="reference external" href="https://tox.readthedocs.io/en/latest/install.html">installing tox</a>, you can run the tests on
+all Python versions by simply running tox:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ tox
+</pre></div>
+</div>
+<p>Or specify a specific environment you want to run:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ tox -e py36
+</pre></div>
+</div>
+<p>For faster iteration, you can also run only a part of the test suite, without using tox.
+To make this work, first install the test requirements into your virtualenv:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>libertem<span class="o">)</span> $ pip install -r test_requirements.txt
+</pre></div>
+</div>
+<p>Now you can run pytest on a subset of tests, for example:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>libertem<span class="o">)</span> $ pytest tests/test_analysis_masks.py
+</pre></div>
+</div>
+<p>See the <a class="reference external" href="https://docs.pytest.org/en/latest/usage.html#specifying-tests-selecting-tests">pytest documentation</a> for details on how to select which tests to run. Before submitting a pull request, you should always run the whole test suite.</p>
+<p>Some tests are marked with <a class="reference external" href="https://docs.pytest.org/en/latest/example/markers.html">custom markers</a>, for example we have some tests that take many seconds to complete.
+To select tests to run by these marks, you can use the <cite>-m</cite> switch. For example, to only run the slow tests:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ tox -- -m slow
+</pre></div>
+</div>
+<p>By default, these slow tests are not run. If you want to run both slow and all
+other tests, you can use a boolean expression like this:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ tox -- -m <span class="s2">&quot;slow or not slow&quot;</span>
+</pre></div>
+</div>
+<p>Another example, to exclude both slow and functional tests:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ tox -- -m <span class="s2">&quot;not functional and not slow&quot;</span>
+</pre></div>
+</div>
+<p>In these examples, <code class="docutils literal notranslate"><span class="pre">--</span></code> separates the the arguments of tox (left of <code class="docutils literal notranslate"><span class="pre">--</span></code>) from the arguments for pytest on the right.
+List of marks used in our test suite:</p>
+<ul class="simple">
+<li><p><cite>slow</cite>: tests that take much more than 1 second to run</p></li>
+<li><p><cite>functional</cite>: tests that spin up a local dask cluster</p></li>
+</ul>
+</div>
+<div class="section" id="code-coverage">
+<h2>Code coverage<a class="headerlink" href="#code-coverage" title="Permalink to this headline">¶</a></h2>
+<p>After running the tests, you can inspect the test coverage by opening <cite>htmlcov/index.html</cite> in a web browser. When
+creating a pull request, the change in coverage is also reported by the codecov bot. Ideally, the test coverage
+should go up with each pull request, at least it should stay the same.</p>
+<div class="section" id="running-tests-for-the-client">
+<h3>Running tests for the client<a class="headerlink" href="#running-tests-for-the-client" title="Permalink to this headline">¶</a></h3>
+<p>To run the testsuite for the client, first install the JavaScript/TypeScript dependencies:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ <span class="nb">cd</span> client/
+$ npm install
+</pre></div>
+</div>
+<p>Then, in the same dircetory, to run the tests execute:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ npm <span class="nb">test</span> -- --coverage
+</pre></div>
+</div>
+<p>This will run all tests and report code coverage. If you want to run the tests while developing the client,
+you can run them in watch mode, which is the default:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ <span class="nb">cd</span> client/
+$ npm <span class="nb">test</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="on-windows">
+<h3>On Windows<a class="headerlink" href="#on-windows" title="Permalink to this headline">¶</a></h3>
+<p>On Windows with Anaconda, you have to create named aliases for the Python interpreter before you can run <code class="docutils literal notranslate"><span class="pre">tox</span></code> so that tox finds the python interpreter where it is expected. Assuming that you run LiberTEM with Python 3.6, place the following file as <code class="docutils literal notranslate"><span class="pre">python3.6.bat</span></code> in your LiberTEM conda environment base folder, typically <code class="docutils literal notranslate"><span class="pre">%LOCALAPPDATA%\conda\conda\envs\libertem\</span></code>, where the <code class="docutils literal notranslate"><span class="pre">python.exe</span></code> of that environment is located.</p>
+<div class="highlight-bat notranslate"><div class="highlight"><pre><span></span><span class="p">@</span><span class="k">echo</span> off
+<span class="c1">REM @echo off is vital so that the file doesn&#39;t clutter the output</span>
+<span class="c1">REM execute python.exe with the same command line</span>
+<span class="p">@</span>python.exe <span class="nv">%*</span>
+</pre></div>
+</div>
+<p>To execute tests with Python 3.7, you create a new environment with Python 3.7:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>&gt; conda create -n libertem-3.7 <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.7
+</pre></div>
+</div>
+<p>Now you can create <code class="docutils literal notranslate"><span class="pre">python3.7.bat</span></code> in your normal LiberTEM environment alongside <code class="docutils literal notranslate"><span class="pre">python3.6.bat</span></code> and make it execute the Python interpreter of your new libertem-3.7 environment:</p>
+<div class="highlight-bat notranslate"><div class="highlight"><pre><span></span><span class="p">@</span><span class="k">echo</span> off
+<span class="c1">REM @echo off is vital so that the file doesn&#39;t clutter the output</span>
+<span class="c1">REM execute python.exe in a different environment</span>
+<span class="c1">REM with the same command line</span>
+<span class="p">@</span><span class="nv">%LOCALAPPDATA%</span>\conda\conda\envs\libertem-3.7\python.exe <span class="nv">%*</span>
+</pre></div>
+</div>
+<p>See also: <a class="reference external" href="http://tox.readthedocs.io/en/latest/developers.html#multiple-python-versions-on-windows">http://tox.readthedocs.io/en/latest/developers.html#multiple-python-versions-on-windows</a></p>
+</div>
+</div>
+<div class="section" id="code-style">
+<h2>Code Style<a class="headerlink" href="#code-style" title="Permalink to this headline">¶</a></h2>
+<p>We try to keep our code <a class="reference external" href="https://www.python.org/dev/peps/pep-0008/">PEP8</a> -compliant, with
+line-length relaxed to 100 chars, and some rules ignored. See the flake8 section in setup.cfg
+for the current PEP8 settings. As a general rule, try to keep your changes in a similar style
+as the surrounding code.</p>
+<p>You can check the code style by running:</p>
+<div class="highlight-bat notranslate"><div class="highlight"><pre><span></span>$ tox -e flake8
+</pre></div>
+</div>
+</div>
+<div class="section" id="building-the-documentation">
+<h2>Building the Documentation<a class="headerlink" href="#building-the-documentation" title="Permalink to this headline">¶</a></h2>
+<p>Documentation building is also done with tox, see above for the basics.
+To start the live building process:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ tox -e docs
+</pre></div>
+</div>
+<p>You can then view a live-built version at <a class="reference external" href="http://localhost:8008">http://localhost:8008</a></p>
+</div>
+<div class="section" id="building-the-client">
+<h2>Building the client<a class="headerlink" href="#building-the-client" title="Permalink to this headline">¶</a></h2>
+<p>The LiberTEM client is written in TypeScript, using a combination of React/Redux/Redux-Saga. The
+client communicates with the Python API server using both HTTP and websockets. Because browsers
+can’t directly execute TypeScript, there is a build step involved, which translates the TypeScript
+code into JavaScript that is then understood by the browser.
+This build step is needed both for development and then again for building the production version.</p>
+<p>If you would like to contribute to the client, you first need to set up the development environment.
+For this, first install nodejs. On Linux, we recommend to <a class="reference external" href="https://nodejs.org/en/download/package-manager/">install via package manager</a>,
+on Windows <a class="reference external" href="https://nodejs.org/en/download/">the installer</a> should be fine. Choose the current LTS version, which is 10.x at the time of writing.</p>
+<p>One you have nodejs installed, you should have the npm command available in your path. You can then install
+the needed build tools and dependencies by changing to the client directory and running the install command:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ <span class="nb">cd</span> client/
+$ npm install
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>It is always a good idea to start development with installing the current dependencies with the
+above command. Having old versions of dependencies installed may cause the build to fail or
+cause unpredictable failures.</p>
+</div>
+<p>Once this command finished without errors, you can start a development server:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ npm run start
+</pre></div>
+</div>
+<p>This server watches all source files for changes and automatically starts the build process. This server,
+which listens on port 3000, will only be able to serve requests for JavaScript and other static files -
+for handling HTTP API requests you still need to run the Python libertem-server process.
+Run it on the default port (9000) to allow proxying from the front-end server to the API server.</p>
+<p>To learn more about the build process, please see <a class="reference external" href="https://github.com/LiberTEM/LiberTEM/blob/master/client/README.md">the README in the client directory</a>.</p>
+<p>You can then use any editor you like to change the client source files, in the client/src directory.
+We recommend <a class="reference external" href="https://code.visualstudio.com/">visual studio code</a> for its excellent TypeScript support.</p>
+<p>To simplify development and installing from a git checkout, we currently always ship a production build
+of the client in the git repository. When you are creating a pull request for the client, please always
+include a current production build. You can create it using a tox shortcut:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ tox -e build_client
+</pre></div>
+</div>
+<p>This will build an optimized production version of the client and copy it into src/libertem/web/client.
+This version will then be used when you start a libertem-server without the client development proxy in front.</p>
+</div>
+<div class="section" id="release-checklist">
+<h2>Release checklist<a class="headerlink" href="#release-checklist" title="Permalink to this headline">¶</a></h2>
+<p>Not all aspects of LiberTEM are covered with automated unit tests. For that reason we should perform some manual tests before and after a release.</p>
+<div class="section" id="before">
+<h3>Before<a class="headerlink" href="#before" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Full documentation review and update</p></li>
+<li><p>Update the JSON files in the <code class="docutils literal notranslate"><span class="pre">packaging/</span></code> folder with author and project information</p></li>
+<li><p>Update <code class="docutils literal notranslate"><span class="pre">contributors.rst</span></code> and  <code class="docutils literal notranslate"><span class="pre">creators.rst</span></code> in <code class="docutils literal notranslate"><span class="pre">docs/source</span></code> from the JSON source files in <code class="docutils literal notranslate"><span class="pre">packaging/</span></code> using <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">scripts/build-authors-contributors</span></code></p></li>
+<li><p>Update <code class="docutils literal notranslate"><span class="pre">packaging/README.html</span></code> with <code class="docutils literal notranslate"><span class="pre">rst2html.py</span> <span class="pre">README.rst</span> <span class="pre">packaging/README.html</span></code> and edit it in such a way that only the HTML body remains. This is used as a description on Zenodo.org</p></li>
+<li><p><a class="reference external" href="https://github.com/LiberTEM/LiberTEM/releases">Confirm that wheel, tar.gz, and AppImage are built for the release candidate on GitHub</a></p></li>
+<li><p>Confirm that a new version is created on Zenodo.org that is ready for submission.</p></li>
+<li><p>Install release candidate packages from GitHub in a clean environment</p></li>
+<li><p>Correct version info displayed in info dialogue?</p></li>
+<li><p>Link check in version info dialogue</p></li>
+<li><dl class="simple">
+<dt>Copy test files of all supported types to a fresh location or purge the parameter cache</dt><dd><ul>
+<li><p>Include floats, ints, big endian, little endian, complex raw data</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Open each test file</dt><dd><ul>
+<li><p>Are parameters recognized correctly, as far as implemented?</p></li>
+<li><p>Any bad default values?</p></li>
+<li><p>Does the file open correctly?</p></li>
+<li><p>Have a look at the dataset info dialogue. Reasonable values?</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Perform all analyses on each test file.</dt><dd><ul>
+<li><p>Does the result change when the input parameters are changed?</p></li>
+<li><p>All display channels present and looking reasonable?</p></li>
+<li><p>Reasonable performance?</p></li>
+<li><p>Use pick mode.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Re-open all the files</dt><dd><ul>
+<li><p>Are the files listed in “recent files”?</p></li>
+<li><p>Are the parameters filled from the cache correctly?</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Try opening all file types with wrong parameters</dt><dd><ul>
+<li><p>Proper understandable error messages?</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Pick one file and confirm keyboard and mouse interaction for all analyses</dt><dd><ul>
+<li><p>Correct bounds check for keyboard and mouse?</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Check what happens when trying to open non-existent files or directories in the GUI.</dt><dd><ul>
+<li><p>Proper understandable error message?</p></li>
+<li><p>Possible to continue working?</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Shut down libertem-server while analysis is running</dt><dd><ul>
+<li><p>Shut down within a few seconds?</p></li>
+<li><p>All workers reaped?</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Check what happens when trying to open non-existent files by scripting.</dt><dd><ul>
+<li><p>Proper understandable error message? TODO automate?</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Check what happens when opening all file types with bad parameters by scripting</dt><dd><ul>
+<li><p>Proper understandable error message? TODO automate?</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>Run all examples</p></li>
+<li><p>Check all examples in documentation, including API docstrings.</p></li>
+<li><p>Run libertem-server on Windows, connect to a remote dask cluster running on Linux, open all file types and perform an analysis for each file type.</p></li>
+<li><dl class="simple">
+<dt>Use the GUI while a long-running analysis is running</dt><dd><ul>
+<li><p>Still usable, decent response times?</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="after-releasing-on-github">
+<h3>After releasing on GitHub<a class="headerlink" href="#after-releasing-on-github" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Confirm that all release packages are built</p></li>
+<li><p>Install release package</p></li>
+<li><p>Confirm correct version info</p></li>
+<li><p>Upload to PyPi</p></li>
+<li><p>Publish new version on zenodo.org</p></li>
+<li><p>Update documentation with new links, if necessary</p></li>
+<li><p>Send announcement message on mailing list</p></li>
+</ul>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Contributing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#running-the-tests">Running the Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#code-coverage">Code coverage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#code-style">Code Style</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#building-the-documentation">Building the Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#building-the-client">Building the client</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#release-checklist">Release checklist</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgments.html">Acknowledgments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="citing.html">Citing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="debugging.html">Debugging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="why_python.html">Why Python?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gsoc.html">GSoC 2019 ideas</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="architecture.html" title="previous chapter">Architecture</a></li>
+      <li>Next: <a href="acknowledgments.html" title="next chapter">Acknowledgments</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, LiberTEM Authors.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/contributing.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,196 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Architecture &#8212; LiberTEM 0.2.0.dev0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Contributing" href="contributing.html" />
+    <link rel="prev" title="Usage" href="usage.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="architecture">
+<h1>Architecture<a class="headerlink" href="#architecture" title="Permalink to this headline">¶</a></h1>
+<img alt="_images/architecture.svg" src="_images/architecture.svg" /><p>For the beginning, LiberTEM will focus on pixelated STEM data processing, both
+interactive and offline. As concrete supported operations, we will start with
+everything that can be expressed as the application of one or more masks and
+summation, i.e. virtual detector, center of mass etc. These operations are
+embarrasingly parallel and can be scaled to a distributed system very well.</p>
+<p>For our task, data locality is one of the most important factors for achieving
+good performance and scalabilty. With a traditional distributed storage
+solution (like lustre or NFS), the network will quickly become the bottleneck.</p>
+<p>LiberTEM is distributing the data to the local storage of
+each compute node. One possible implementation is using the <a class="reference external" href="https://hadoop.apache.org/docs/r3.1.0/">Hadoop filesytem (HDFS)</a>,
+although we are <a class="reference external" href="https://github.com/LiberTEM/LiberTEM/issues/136">working on a transparent caching layer</a> as an alternative. The general idea is to split the dataset into (usually disjoint) partitions,
+which are assigned to worker nodes.</p>
+<p>The execution is structured into Tasks and Jobs. A Job represents the computation on
+a whole dataset, and is divided into Tasks for each partition. The scheduler executes
+Tasks on the available worker nodes. For fast execution on each node, the Task reads the
+data in small Tiles (~1MB).</p>
+<p>For distributing the workload, we are using <a class="reference external" href="http://distributed.readthedocs.io/en/latest/">dask.distributed</a>. The <cite>Future</cite> API
+allows us to control our computation in a flexible way, with little overhead.
+With dask Futures, we can assure that computation on a partition of the dataset
+is scheduled on the node(s) that hold the partition on their local storage.</p>
+<p>For ingesting data into the cluster, a <a class="reference external" href="https://github.com/LiberTEM/LiberTEM/issues/136">caching layer</a>
+(WIP) transparently reads a dataset from a primary source (via a shared network file system,
+HTTP, …) and stores it on fast local storage in a format that is best suited for efficient processing.
+The cached data can also be pre-processed, for example for offset correction or applying a gain map.</p>
+<p>An important part of the architecture is the API server. Through the API server,
+the client gets access to the resources of the cluster, by running jobs. It uses
+a protocol based on HTTP and/or websockets. Processing is initiated by HTTP calls,
+and results are streamed back to the browser via web sockets.</p>
+<p>The API server keeps some state in memory, like information about the currently
+opened datasets. Traditionally this would be done with an external
+in-memory database, but for ease of deployment, we decided to integrate this into the
+API server.</p>
+<p>Processing is done in an asynchronous fashion; if you start a job the request
+immediately returns, but you get notifications about status changes, or you can
+explicitly query the API server about a specific job.</p>
+<p>As UI, we are developing a web-based interface. This allows LiberTEM to work
+in cloud environment as well as locally on a single node. We can benefit from
+existing FOSS frameworks and infrastructure for communication, authentication
+etc. of the web.</p>
+<p>LiberTEM is also suited for running on your laptop or workstation. In this case,
+all parts can run on a single node. We can also skip the caching step, if the data
+is already available locally.</p>
+<p>When taking care to avoid needless copying and buffering, we can achieve native
+throughput on each node. With NVMe SSDs, this means we can process multiple gigabytes per
+second per node.</p>
+<div class="section" id="mathematical-expression-for-applying-masks">
+<h2>Mathematical expression for applying masks<a class="headerlink" href="#mathematical-expression-for-applying-masks" title="Permalink to this headline">¶</a></h2>
+<p>The most basic operation with pixelated STEM data is multiplying each frame
+element-wise with a mask of the same size and summing up the result for each
+frame. This way one can implement virtual detectors, center of mass and
+darkfield imaging, to name a few examples.</p>
+<p>Since each frame is processed individually and there’s a 1:1 match between
+mask element and detector pixel, the processing can be simplified by
+flattening the 4D dataset to a 2D matrix, i.e. a list of vectors where each
+vector is one flattened detector frame.
+Correspondingly, each mask is flattened to a 1D vector as well.
+The result of element-wise  multiplication and summation is a 1D vector for
+each mask, where each entry corresponds to the result of one frame.
+To display the result, the data can be re-shaped to the scan dimension again.</p>
+<p>With those extra dimensions flattened, let <code class="docutils literal notranslate"><span class="pre">c</span></code> be the number of pixels per frame,
+<code class="docutils literal notranslate"><span class="pre">n</span></code> the number of frames and <code class="docutils literal notranslate"><span class="pre">m</span></code> the number of masks. Let (<code class="docutils literal notranslate"><span class="pre">A</span></code>) be
+a <code class="docutils literal notranslate"><span class="pre">n</span> <span class="pre">x</span> <span class="pre">c</span></code> matrix with the scanned data, and <code class="docutils literal notranslate"><span class="pre">B</span></code> a <code class="docutils literal notranslate"><span class="pre">c</span> <span class="pre">x</span> <span class="pre">m</span></code> matrix with the masks.
+Applying the masks in <code class="docutils literal notranslate"><span class="pre">B</span></code> to the detector data in <code class="docutils literal notranslate"><span class="pre">A</span></code> can be expressed as a
+<a class="reference external" href="https://en.wikipedia.org/wiki/Matrix_multiplication#Definition">rectangular matrix product</a>
+of <code class="docutils literal notranslate"><span class="pre">A</span></code> and <code class="docutils literal notranslate"><span class="pre">B</span></code>.</p>
+<p>That means we can use the BLAS function
+<a class="reference external" href="https://en.wikipedia.org/wiki/Basic_Linear_Algebra_Subprograms#Level_3">GEMM</a>.
+to process the flattened data and we can choose from  wide array of highly optimized
+implementations of this operation.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Architecture</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#mathematical-expression-for-applying-masks">Mathematical expression for applying masks</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgments.html">Acknowledgments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="citing.html">Citing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="debugging.html">Debugging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="why_python.html">Why Python?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gsoc.html">GSoC 2019 ideas</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="usage.html" title="previous chapter">Usage</a></li>
+      <li>Next: <a href="contributing.html" title="next chapter">Contributing</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, LiberTEM Authors.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/architecture.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

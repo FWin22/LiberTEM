@@ -1,0 +1,969 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Reference &#8212; LiberTEM 0.2.0.dev0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="GSoC 2019 ideas" href="gsoc.html" />
+    <link rel="prev" title="Why Python?" href="why_python.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="reference">
+<h1>Reference<a class="headerlink" href="#reference" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-libertem.api">
+<span id="python-api"></span><h2>Python API<a class="headerlink" href="#module-libertem.api" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="libertem.api.Context">
+<em class="property">class </em><code class="descclassname">libertem.api.</code><code class="descname">Context</code><span class="sig-paren">(</span><em>executor=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/api.html#Context"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.api.Context" title="Permalink to this definition">¶</a></dt>
+<dd><p>Context is the main entry point of the LiberTEM API. It contains
+methods for loading datasets, creating jobs on them and running
+them.</p>
+<dl class="method">
+<dt id="libertem.api.Context.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>executor=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/api.html#Context.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.api.Context.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new context. In the background, this creates a suitable
+executor and spins up a local Dask cluster.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="libertem.api.Context.create_com_analysis">
+<code class="descname">create_com_analysis</code><span class="sig-paren">(</span><em>dataset</em>, <em>cx: int = None</em>, <em>cy: int = None</em>, <em>mask_radius: int = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/api.html#Context.create_com_analysis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.api.Context.create_com_analysis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform a center-of-mass (first moment) analysis, possibly masked.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> – the dataset to work on</p></li>
+<li><p><strong>cx</strong> – reference center x value</p></li>
+<li><p><strong>cy</strong> – reference center y value</p></li>
+<li><p><strong>mask_radius</strong> – mask out intensity outside of mask_radius from (cy, cx)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="libertem.api.Context.create_disk_analysis">
+<code class="descname">create_disk_analysis</code><span class="sig-paren">(</span><em>dataset</em>, <em>cx: int = None</em>, <em>cy: int = None</em>, <em>r: int = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/api.html#Context.create_disk_analysis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.api.Context.create_disk_analysis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Integrate over a disk (i.e. filled circle)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> – the dataset to work on</p></li>
+<li><p><strong>cx</strong> – center x value</p></li>
+<li><p><strong>cy</strong> – center y value</p></li>
+<li><p><strong>r</strong> – radius of the disk</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="libertem.api.Context.create_mask_analysis">
+<code class="descname">create_mask_analysis</code><span class="sig-paren">(</span><em>factories</em>, <em>dataset</em>, <em>use_sparse=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/api.html#Context.create_mask_analysis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.api.Context.create_mask_analysis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a mask application analysis. Each factory function should, when called,
+return a numpy array with the same shape as frames in the dataset (so dataset.shape.sig).</p>
+<p>This is a more high-level method than <cite>create_mask_job</cite> and differs in the way the result
+is returned. With <cite>create_mask_job</cite>, it is a single numpy array, here we split it up for
+each mask we apply, make some default visualization available etc.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>factories</strong> – list of functions that take no arguments and create masks. The returned masks can be
+numpy arrays or scipy.sparse matrices. The mask factories should not reference large
+objects because they can create significant overheads when they are pickled and
+unpickled.</p></li>
+<li><p><strong>dataset</strong> – dataset to work on</p></li>
+<li><p><strong>use_sparse</strong> – <ul>
+<li><p>None (default): Use sparse matrix multiplication if all factory functions return a             sparse mask, otherwise convert all masks to dense matrices and use dense matrix             multiplication</p></li>
+<li><p>True: Convert all masks to sparse matrices.</p></li>
+<li><p>False: Convert all masks to dense matrices.</p></li>
+</ul>
+</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">libertem.api</span> <span class="k">import</span> <span class="n">Context</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">Context</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ds</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;...&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Use intermediate variables instead of referencing</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># large complex objects like a dataset within the</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># factory function</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">shape</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">sig</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">job</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">create_mask_analysis</span><span class="p">(</span>
+<span class="gp">... </span><span class="n">factories</span><span class="o">=</span><span class="p">[</span><span class="k">lambda</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">shape</span><span class="p">)],</span>
+<span class="gp">... </span><span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">mask_0</span><span class="o">.</span><span class="n">raw_data</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="libertem.api.Context.create_mask_job">
+<code class="descname">create_mask_job</code><span class="sig-paren">(</span><em>factories</em>, <em>dataset</em>, <em>use_sparse=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/api.html#Context.create_mask_job"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.api.Context.create_mask_job" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a low-level mask application job. Each factory function should, when called,
+return a numpy array with the same shape as frames in the dataset (so dataset.shape.sig).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>factories</strong> – list of functions that take no arguments and create masks. The returned masks can be
+numpy arrays or scipy.sparse matrices. The mask factories should not reference large
+objects because they can create significant overheads when they are pickled and
+unpickled.</p></li>
+<li><p><strong>dataset</strong> – dataset to work on</p></li>
+<li><p><strong>use_sparse</strong> – <ul>
+<li><p>None (default): Use sparse matrix multiplication if all factory functions return a             sparse mask, otherwise convert all masks to dense matrices and use dense matrix             multiplication</p></li>
+<li><p>True: Convert all masks to sparse matrices.</p></li>
+<li><p>False: Convert all masks to dense matrices.</p></li>
+</ul>
+</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">libertem.api</span> <span class="k">import</span> <span class="n">Context</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">Context</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ds</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;...&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Use intermediate variables instead of referencing</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># large complex objects like a dataset within the</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># factory function</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">shape</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">sig</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">job</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">create_mask_job</span><span class="p">(</span>
+<span class="gp">... </span><span class="n">factories</span><span class="o">=</span><span class="p">[</span><span class="k">lambda</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">shape</span><span class="p">)],</span>
+<span class="gp">... </span><span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="libertem.api.Context.create_pick_analysis">
+<code class="descname">create_pick_analysis</code><span class="sig-paren">(</span><em>dataset</em>, <em>x: int</em>, <em>y: int = None</em>, <em>z: int = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/api.html#Context.create_pick_analysis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.api.Context.create_pick_analysis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pick a single frame / signal element from (z, y, x). Number of parameters
+must match number of navigation dimensions in the dataset, for example if
+you have a 4D dataset with two signal dimensions and two navigation dimensions,
+you need to specify x and y.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> – The dataset to work on</p></li>
+<li><p><strong>x</strong> – x coordinate</p></li>
+<li><p><strong>y</strong> – y coordinate</p></li>
+<li><p><strong>z</strong> – z coordinate</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the frame as numpy array</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">libertem.api</span> <span class="k">import</span> <span class="n">Context</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">Context</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ds</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;...&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">origin</span> <span class="o">=</span> <span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">job</span> <span class="o">=</span> <span class="n">create_pick_analysis</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">ds</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">intensity</span><span class="o">.</span><span class="n">raw_data</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">ds</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">sig</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="libertem.api.Context.create_pick_job">
+<code class="descname">create_pick_job</code><span class="sig-paren">(</span><em>dataset, origin: Tuple[int], shape: Tuple[int] = None</em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/libertem/api.html#Context.create_pick_job"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.api.Context.create_pick_job" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pick raw data from <cite>origin</cite> with the size defined in <cite>shape</cite>.</p>
+<p>NOTE: if you just want to read single frames, it is easier to use <cite>create_pick_analysis</cite>.</p>
+<p>NOTE: It is not efficient to use this method on large parts of datasets, please consider
+implementing an analysis instead.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> – The dataset to work on</p></li>
+<li><p><strong>origin</strong> – Where to start reading. You can either specify all dimensions, or only nav dimensions,
+in which case the signal is read starting from (0, …, 0).</p></li>
+<li><p><strong>shape</strong> – The shape of the data to read. If None, read a “frame” or single signal element</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the raw data as numpy array</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">libertem.api</span> <span class="k">import</span> <span class="n">Context</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">Context</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ds</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;...&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">origin</span> <span class="o">=</span> <span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">job</span> <span class="o">=</span> <span class="n">create_pick_job</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">ds</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="n">origin</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">ds</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">sig</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="libertem.api.Context.create_point_analysis">
+<code class="descname">create_point_analysis</code><span class="sig-paren">(</span><em>dataset</em>, <em>x: int = None</em>, <em>y: int = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/api.html#Context.create_point_analysis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.api.Context.create_point_analysis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Select the pixel with coords (y, x) from each frame</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="libertem.api.Context.create_ring_analysis">
+<code class="descname">create_ring_analysis</code><span class="sig-paren">(</span><em>dataset</em>, <em>cx: int = None</em>, <em>cy: int = None</em>, <em>ri: int = None</em>, <em>ro: int = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/api.html#Context.create_ring_analysis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.api.Context.create_ring_analysis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Integrate over a ring</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> – the dataset to work on</p></li>
+<li><p><strong>cx</strong> – center x value</p></li>
+<li><p><strong>cy</strong> – center y value</p></li>
+<li><p><strong>ri</strong> – inner radius</p></li>
+<li><p><strong>ro</strong> – outer radius</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="libertem.api.Context.create_sum_analysis">
+<code class="descname">create_sum_analysis</code><span class="sig-paren">(</span><em>dataset</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/api.html#Context.create_sum_analysis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.api.Context.create_sum_analysis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sum of all signal elements</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>dataset</strong> – the dataset to work on</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="libertem.api.Context.load">
+<code class="descname">load</code><span class="sig-paren">(</span><em>filetype: str</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span> &#x2192; libertem.io.dataset.base.DataSet<a class="reference internal" href="_modules/libertem/api.html#Context.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.api.Context.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a <cite>DataSet</cite>. As it doesn’t load the whole data into RAM at once,
+you can load and process datasets that are bigger than your available RAM.
+Using fast storage (i.e. SSD) is advisable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filetype</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – one of: hdfs, hdf5, raw, mib, blo, k2is, ser, frms6</p></li>
+<li><p><strong>args</strong> – passed on to the DataSet implementation</p></li>
+<li><p><strong>kwargs</strong> – passed on to the DataSet implementation</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the loaded dataset</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#libertem.io.dataset.base.DataSet" title="libertem.io.dataset.base.DataSet">DataSet</a></p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Additional parameters are passed to the concrete DataSet implementation</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="libertem.api.Context.run">
+<code class="descname">run</code><span class="sig-paren">(</span><em>job: Union[libertem.job.base.Job, libertem.analysis.base.BaseAnalysis]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/api.html#Context.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.api.Context.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the given <cite>Job</cite> or <cite>Analysis</cite> and return the result data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>job</strong> – the job or analysis to run</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="libertem.api.Context.run_udf">
+<code class="descname">run_udf</code><span class="sig-paren">(</span><em>dataset</em>, <em>fn</em>, <em>make_buffers</em>, <em>init=None</em>, <em>merge=&lt;function merge_assign&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/api.html#Context.run_udf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.api.Context.run_udf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run <cite>fn</cite> on <cite>dataset</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> – The dataset to work on</p></li>
+<li><p><strong>init</strong> – Function to perform initialization. Should return a dict of variables that will
+be shared between calls calls of your function. Note that these variables should
+be considered read-only; they are not meant as a way to communicate between calls.</p></li>
+<li><p><strong>make_buffers</strong> – Function that returns a dict, mapping buffer names to BufferWrapper instances</p></li>
+<li><p><strong>fn</strong> – The function to run on the dataset. It needs to accept the frame as keyword argument.
+Additionally, it needs to have a parameter for each buffer created in make_buffers,
+and also for each variable returned from the init function.</p></li>
+<li><p><strong>merge</strong> – A function merging a partial result into the final result buffer. By default it just
+performs assignment.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<p>This example creates a “sum image”, where all pixels of each
+diffraction pattern are summed up:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">my_buffers</span><span class="p">():</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">return</span> <span class="p">{</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="s1">&#39;pixelsum&#39;</span><span class="p">:</span> <span class="n">BufferWrapper</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>            <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;nav&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float32&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="p">}</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">my_frame_fn</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">pixelsum</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">pixelsum</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">Context</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ds</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">run_udf</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">dataset</span><span class="o">=</span><span class="n">ds</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">fn</span><span class="o">=</span><span class="n">my_frame_fn</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">make_buffers</span><span class="o">=</span><span class="n">my_buffers</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-libertem.common.buffers"></span><dl class="class">
+<dt id="libertem.common.buffers.BufferWrapper">
+<em class="property">class </em><code class="descclassname">libertem.common.buffers.</code><code class="descname">BufferWrapper</code><span class="sig-paren">(</span><em>kind</em>, <em>extra_shape=()</em>, <em>dtype='float32'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/common/buffers.html#BufferWrapper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.common.buffers.BufferWrapper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper class to automatically allocate buffers, either for partitions or
+the whole dataset, and create views for partitions or single frames.</p>
+<p>This is used as a helper to allow easy merging of results without needing
+to manually handle indexing.</p>
+<p>Usually, as a user, you only need to instantiate this class, specifying <cite>kind</cite>,
+<cite>dtype</cite> and sometimes <cite>extra_shape</cite> parameters. Most methods are meant to be called
+from LiberTEM-internal code, for example the UDF functionality.</p>
+<dl class="method">
+<dt id="libertem.common.buffers.BufferWrapper.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>kind</em>, <em>extra_shape=()</em>, <em>dtype='float32'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/common/buffers.html#BufferWrapper.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.common.buffers.BufferWrapper.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>kind</strong> (<em>&quot;nav&quot;</em><em> or </em><em>&quot;sig&quot;</em>) – The rough shape of the buffer, either corresponding to the navigation
+or the signal dimensions of the dataset</p></li>
+<li><p><strong>extra_shape</strong> (<em>optional</em><em>, </em><em>tuple of int</em>) – You can specify additional dimensions for your data. For example, if
+you want to store 2D coords, you would specify (2,) here.</p></li>
+<li><p><strong>dtype</strong> (<em>string</em><em> or </em><em>numpy dtype</em>) – The dtype of this buffer</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="libertem.common.buffers.BufferWrapper.allocate">
+<code class="descname">allocate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/common/buffers.html#BufferWrapper.allocate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.common.buffers.BufferWrapper.allocate" title="Permalink to this definition">¶</a></dt>
+<dd><p>allocate a new buffer, in the shape previously set
+via one of the <cite>set_shape_*</cite> methods.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="libertem.common.buffers.BufferWrapper.data">
+<code class="descname">data</code><a class="headerlink" href="#libertem.common.buffers.BufferWrapper.data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="libertem.common.buffers.BufferWrapper.get_view_for_frame">
+<code class="descname">get_view_for_frame</code><span class="sig-paren">(</span><em>partition</em>, <em>tile</em>, <em>frame_idx</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/common/buffers.html#BufferWrapper.get_view_for_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.common.buffers.BufferWrapper.get_view_for_frame" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="libertem.common.buffers.BufferWrapper.get_view_for_partition">
+<code class="descname">get_view_for_partition</code><span class="sig-paren">(</span><em>partition</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/common/buffers.html#BufferWrapper.get_view_for_partition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.common.buffers.BufferWrapper.get_view_for_partition" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="libertem.common.buffers.BufferWrapper.has_data">
+<code class="descname">has_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/common/buffers.html#BufferWrapper.has_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.common.buffers.BufferWrapper.has_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="libertem.common.buffers.BufferWrapper.set_buffer">
+<code class="descname">set_buffer</code><span class="sig-paren">(</span><em>buf</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/common/buffers.html#BufferWrapper.set_buffer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.common.buffers.BufferWrapper.set_buffer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the underlying buffer to an existing numpy array. The
+shape must match with the shape of nav or sig of the dataset,
+plus extra_shape, as determined by the <cite>kind</cite> and <cite>extra_shape</cite>
+constructor arguments.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="libertem.common.buffers.BufferWrapper.set_shape_ds">
+<code class="descname">set_shape_ds</code><span class="sig-paren">(</span><em>dataset</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/common/buffers.html#BufferWrapper.set_shape_ds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.common.buffers.BufferWrapper.set_shape_ds" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="libertem.common.buffers.BufferWrapper.set_shape_partition">
+<code class="descname">set_shape_partition</code><span class="sig-paren">(</span><em>partition</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/common/buffers.html#BufferWrapper.set_shape_partition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.common.buffers.BufferWrapper.set_shape_partition" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-libertem.common.shape">
+<span id="internal-api"></span><h2>Internal API<a class="headerlink" href="#module-libertem.common.shape" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="libertem.common.shape.Shape">
+<em class="property">class </em><code class="descclassname">libertem.common.shape.</code><code class="descname">Shape</code><span class="sig-paren">(</span><em>shape</em>, <em>sig_dims</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/common/shape.html#Shape"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.common.shape.Shape" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="libertem.common.shape.Shape.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>shape</em>, <em>sig_dims</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/common/shape.html#Shape.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.common.shape.Shape.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a Shape that knows how many dimensions are part of navigation/signal.
+It is assumed that the signal is in the last <cite>sig_dims</cite> dimensions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>shape</strong> (<em>tuple of int</em>) – the shape we want to work with, as n-tuple (like numpy array shapes)</p></li>
+<li><p><strong>sig_dims</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – the number of dimensions that are considered part of the signal</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="libertem.common.shape.Shape.dims">
+<code class="descname">dims</code><a class="headerlink" href="#libertem.common.shape.Shape.dims" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of dimensions</p>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">libertem.common</span> <span class="k">import</span> <span class="n">Shape</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">Shape</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span> <span class="n">sig_dims</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">dims</span>
+<span class="go">4</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">nav</span><span class="o">.</span><span class="n">dims</span>  <span class="c1"># creates a new temporary Shape and accesses .dims on it</span>
+<span class="go">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">sig</span><span class="o">.</span><span class="n">dims</span>
+<span class="go">2</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="libertem.common.shape.Shape.flatten_nav">
+<code class="descname">flatten_nav</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/common/shape.html#Shape.flatten_nav"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.common.shape.Shape.flatten_nav" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flatten in the navigation dimensions</p>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">libertem.common</span> <span class="k">import</span> <span class="n">Shape</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">Shape</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span> <span class="n">sig_dims</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">flatten_nav</span><span class="p">()</span>
+<span class="go">(25, 16, 16)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="libertem.common.shape.Shape.flatten_sig">
+<code class="descname">flatten_sig</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/common/shape.html#Shape.flatten_sig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.common.shape.Shape.flatten_sig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flatten in the signal dimensions</p>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">libertem.common</span> <span class="k">import</span> <span class="n">Shape</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">Shape</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span> <span class="n">sig_dims</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">flatten_sig</span><span class="p">()</span>
+<span class="go">(5, 5, 256)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="libertem.common.shape.Shape.nav">
+<code class="descname">nav</code><a class="headerlink" href="#libertem.common.shape.Shape.nav" title="Permalink to this definition">¶</a></dt>
+<dd><p>Crop to navigation dimensions</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>shape</strong> – like this shape, but without the signal dimensions</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#libertem.common.shape.Shape" title="libertem.common.shape.Shape">Shape</a></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">libertem.common</span> <span class="k">import</span> <span class="n">Shape</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">Shape</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span> <span class="n">sig_dims</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">nav</span>
+<span class="go">(5, 5)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="libertem.common.shape.Shape.sig">
+<code class="descname">sig</code><a class="headerlink" href="#libertem.common.shape.Shape.sig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Crop to signal dimensions</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>shape</strong> – like this shape, but without the navigation dimensions</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#libertem.common.shape.Shape" title="libertem.common.shape.Shape">Shape</a></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">libertem.common</span> <span class="k">import</span> <span class="n">Shape</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">Shape</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span> <span class="n">sig_dims</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">sig</span>
+<span class="go">(16, 16)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="libertem.common.shape.Shape.size">
+<code class="descname">size</code><a class="headerlink" href="#libertem.common.shape.Shape.size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Nunmber of elements covered by this shape</p>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">libertem.common</span> <span class="k">import</span> <span class="n">Shape</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">Shape</span><span class="p">((</span><span class="mi">16</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span> <span class="n">sig_dims</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">size</span>
+<span class="go">256</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="libertem.common.shape.Shape.to_tuple">
+<code class="descname">to_tuple</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/common/shape.html#Shape.to_tuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.common.shape.Shape.to_tuple" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-libertem.common.slice"></span><dl class="class">
+<dt id="libertem.common.slice.Slice">
+<em class="property">class </em><code class="descclassname">libertem.common.slice.</code><code class="descname">Slice</code><span class="sig-paren">(</span><em>origin</em>, <em>shape</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/common/slice.html#Slice"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.common.slice.Slice" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="libertem.common.slice.Slice.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>origin</em>, <em>shape</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/common/slice.html#Slice.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.common.slice.Slice.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>A n-dimensional slice, defined by origin and shape</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>origin</strong> (<em>tuple of int</em>) – global “top-left” coordinates of this slice</p></li>
+<li><p><strong>shape</strong> (<em>Shape instance</em>) – the size of this slice</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="libertem.common.slice.Slice.discard_nav">
+<code class="descname">discard_nav</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/common/slice.html#Slice.discard_nav"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.common.slice.Slice.discard_nav" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns a copy with the origin/shape zeroed in the nav dimensions</p>
+<p>this is used to create uniform cache keys</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="libertem.common.slice.Slice.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>arr=None</em>, <em>sig_only=False</em>, <em>nav_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/common/slice.html#Slice.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.common.slice.Slice.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a standard python tuple-of-slice-object which can be used
+to slice any compatible ndarray</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arr</strong> – something implementing the slice interface. if given, returns arr[slice]</p></li>
+<li><p><strong>sig_only</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – get a signal-only slice for frames/masks</p></li>
+<li><p><strong>nav_only</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – get a nav-only slice, for example for indexing something that is shaped like
+the navigation dimensions of this Slice.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>returns standard python slices computed from
+our origin+shape model or arr indexed with this slicing
+if arr is given</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple of slice objects</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">libertem.common</span> <span class="k">import</span> <span class="n">Slice</span><span class="p">,</span> <span class="n">Shape</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">Slice</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">Shape</span><span class="p">((</span><span class="mi">16</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">sig_dims</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span> <span class="n">origin</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">16</span><span class="p">,</span> <span class="mi">16</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">sig_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)]</span>
+<span class="go">array([[1., 1., 1., 1.],</span>
+<span class="go">       [1., 1., 1., 1.],</span>
+<span class="go">       [1., 1., 1., 1.],</span>
+<span class="go">       [1., 1., 1., 1.]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="libertem.common.slice.Slice.intersection_with">
+<code class="descname">intersection_with</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/common/slice.html#Slice.intersection_with"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.common.slice.Slice.intersection_with" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the intersection between this slice and <cite>other</cite>. May result in
+dimensions that are zero, which means that there is no intersection.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>slice</strong> – the intersection between this and the other slice</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#libertem.common.slice.Slice" title="libertem.common.slice.Slice">Slice</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="libertem.common.slice.Slice.is_null">
+<code class="descname">is_null</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/common/slice.html#Slice.is_null"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.common.slice.Slice.is_null" title="Permalink to this definition">¶</a></dt>
+<dd><p>If any part of our shape is zero, this slice doesn’t span any data and is null / empty.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="libertem.common.slice.Slice.origin">
+<code class="descname">origin</code><a class="headerlink" href="#libertem.common.slice.Slice.origin" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="libertem.common.slice.Slice.shape">
+<code class="descname">shape</code><a class="headerlink" href="#libertem.common.slice.Slice.shape" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="libertem.common.slice.Slice.shift">
+<code class="descname">shift</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/common/slice.html#Slice.shift"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.common.slice.Slice.shift" title="Permalink to this definition">¶</a></dt>
+<dd><p>make a new <code class="docutils literal notranslate"><span class="pre">Slice</span></code> with origin relative to <code class="docutils literal notranslate"><span class="pre">other.origin</span></code>
+and the same shape as this <code class="docutils literal notranslate"><span class="pre">Slice</span></code></p>
+<p>useful for translating to the local coordinate system of <code class="docutils literal notranslate"><span class="pre">other</span></code></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="libertem.common.slice.Slice.subslices">
+<code class="descname">subslices</code><span class="sig-paren">(</span><em>shape</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/common/slice.html#Slice.subslices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.common.slice.Slice.subslices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generator for all subslices of this slice with dimensions
+specified by <code class="docutils literal notranslate"><span class="pre">shape</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>shape</strong> (<em>tuple of int</em><em> or </em><a class="reference internal" href="#libertem.common.shape.Shape" title="libertem.common.shape.Shape"><em>Shape</em></a>) – the shape of each sub-slice</p>
+</dd>
+<dt class="field-even">Yields</dt>
+<dd class="field-even"><p><em>Slice</em> – all subslices, in fast-access order</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-libertem.io.dataset.base"></span><dl class="class">
+<dt id="libertem.io.dataset.base.DataSet">
+<em class="property">class </em><code class="descclassname">libertem.io.dataset.base.</code><code class="descname">DataSet</code><a class="reference internal" href="_modules/libertem/io/dataset/base.html#DataSet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.io.dataset.base.DataSet" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="libertem.io.dataset.base.DataSet.check_valid">
+<code class="descname">check_valid</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/io/dataset/base.html#DataSet.check_valid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.io.dataset.base.DataSet.check_valid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="libertem.io.dataset.base.DataSet.detect_params">
+<em class="property">classmethod </em><code class="descname">detect_params</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/io/dataset/base.html#DataSet.detect_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.io.dataset.base.DataSet.detect_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Guess if path can be opened using this DataSet implementation and
+detect parameters.</p>
+<p>returns dict of detected parameters if path matches this dataset type,
+returns False if path is most likely not of a matching type.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="libertem.io.dataset.base.DataSet.diagnostics">
+<code class="descname">diagnostics</code><a class="headerlink" href="#libertem.io.dataset.base.DataSet.diagnostics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Diagnistics common for all DataSet implementations</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="libertem.io.dataset.base.DataSet.dtype">
+<code class="descname">dtype</code><a class="headerlink" href="#libertem.io.dataset.base.DataSet.dtype" title="Permalink to this definition">¶</a></dt>
+<dd><p>the destination data type</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="libertem.io.dataset.base.DataSet.get_diagnostics">
+<code class="descname">get_diagnostics</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/io/dataset/base.html#DataSet.get_diagnostics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.io.dataset.base.DataSet.get_diagnostics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get relevant diagnostics for this dataset, as a list of
+dicts with keys name, value, where value may be string or
+a list of dicts itself. Subclasses should override this method.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="libertem.io.dataset.base.DataSet.get_partitions">
+<code class="descname">get_partitions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/io/dataset/base.html#DataSet.get_partitions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.io.dataset.base.DataSet.get_partitions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a generator over all Partitions in this DataSet</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="libertem.io.dataset.base.DataSet.initialize">
+<code class="descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/io/dataset/base.html#DataSet.initialize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.io.dataset.base.DataSet.initialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>pre-load metadata. this will be executed on a worker node. should return self.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="libertem.io.dataset.base.DataSet.partition_shape">
+<code class="descname">partition_shape</code><span class="sig-paren">(</span><em>datashape</em>, <em>framesize</em>, <em>dtype</em>, <em>target_size</em>, <em>min_num_partitions=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/io/dataset/base.html#DataSet.partition_shape"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.io.dataset.base.DataSet.partition_shape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate partition shape for the given <code class="docutils literal notranslate"><span class="pre">target_size</span></code>
+:param datashape: size of the whole dataset
+:type datashape: (int, int, int, int)
+:param framesize: number of pixels per frame
+:type framesize: int
+:param dtype: data type of the dataset
+:type dtype: numpy.dtype or str
+:param target_size: target size in bytes - how large should each partition be?
+:type target_size: int
+:param min_num_partitions: minimum number of partitions desired, defaults to twice the number of CPU cores
+:type min_num_partitions: int</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the shape calculated from the given parameters</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>(<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">int</a>, <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">int</a>, <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">int</a>, <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">int</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="libertem.io.dataset.base.DataSet.raw_dtype">
+<code class="descname">raw_dtype</code><a class="headerlink" href="#libertem.io.dataset.base.DataSet.raw_dtype" title="Permalink to this definition">¶</a></dt>
+<dd><p>the underlying data type</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="libertem.io.dataset.base.DataSet.raw_shape">
+<code class="descname">raw_shape</code><a class="headerlink" href="#libertem.io.dataset.base.DataSet.raw_shape" title="Permalink to this definition">¶</a></dt>
+<dd><p>the “real” shape of the dataset, as it makes sense for the format</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="libertem.io.dataset.base.DataSet.shape">
+<code class="descname">shape</code><a class="headerlink" href="#libertem.io.dataset.base.DataSet.shape" title="Permalink to this definition">¶</a></dt>
+<dd><p>the effective shape, for example imprinted by the scan_size parameter of some dataset impls</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="libertem.io.dataset.base.DataSetException">
+<em class="property">exception </em><code class="descclassname">libertem.io.dataset.base.</code><code class="descname">DataSetException</code><a class="reference internal" href="_modules/libertem/io/dataset/base.html#DataSetException"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.io.dataset.base.DataSetException" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="libertem.io.dataset.base.DataSetMeta">
+<em class="property">class </em><code class="descclassname">libertem.io.dataset.base.</code><code class="descname">DataSetMeta</code><span class="sig-paren">(</span><em>shape</em>, <em>raw_shape</em>, <em>dtype</em>, <em>raw_dtype=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/io/dataset/base.html#DataSetMeta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.io.dataset.base.DataSetMeta" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="libertem.io.dataset.base.DataSetMeta.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>shape</em>, <em>raw_shape</em>, <em>dtype</em>, <em>raw_dtype=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/io/dataset/base.html#DataSetMeta.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.io.dataset.base.DataSetMeta.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="libertem.io.dataset.base.DataTile">
+<em class="property">class </em><code class="descclassname">libertem.io.dataset.base.</code><code class="descname">DataTile</code><span class="sig-paren">(</span><em>data</em>, <em>tile_slice</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/io/dataset/base.html#DataTile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.io.dataset.base.DataTile" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="libertem.io.dataset.base.DataTile.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>data</em>, <em>tile_slice</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/io/dataset/base.html#DataTile.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.io.dataset.base.DataTile.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>A unit of data that can easily be processed at once, for example using
+one of the BLAS routines. For large frames, this may be a stack of sub-frame
+tiles.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tile_slice</strong> (<a class="reference internal" href="#libertem.common.slice.Slice" title="libertem.common.slice.Slice"><em>Slice</em></a>) – the global coordinates for this data tile</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.16)"><em>numpy.ndarray</em></a>) – the data corresponding to the origin/shape of tile_slice</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="libertem.io.dataset.base.DataTile.data">
+<code class="descname">data</code><a class="headerlink" href="#libertem.io.dataset.base.DataTile.data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="libertem.io.dataset.base.DataTile.flat_data">
+<code class="descname">flat_data</code><a class="headerlink" href="#libertem.io.dataset.base.DataTile.flat_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flatten the data.</p>
+<p>The result is a 2D array where each row contains pixel data
+from a single frame. It is just a reshape, so it is a view into
+the original data.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="libertem.io.dataset.base.DataTile.flat_nav">
+<code class="descname">flat_nav</code><a class="headerlink" href="#libertem.io.dataset.base.DataTile.flat_nav" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flatten the nav axis of the data.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="libertem.io.dataset.base.DataTile.tile_slice">
+<code class="descname">tile_slice</code><a class="headerlink" href="#libertem.io.dataset.base.DataTile.tile_slice" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="libertem.io.dataset.base.Partition">
+<em class="property">class </em><code class="descclassname">libertem.io.dataset.base.</code><code class="descname">Partition</code><span class="sig-paren">(</span><em>meta</em>, <em>partition_slice</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/io/dataset/base.html#Partition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.io.dataset.base.Partition" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="libertem.io.dataset.base.Partition.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>meta</em>, <em>partition_slice</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/io/dataset/base.html#Partition.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.io.dataset.base.Partition.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="libertem.io.dataset.base.Partition.dtype">
+<code class="descname">dtype</code><a class="headerlink" href="#libertem.io.dataset.base.Partition.dtype" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="libertem.io.dataset.base.Partition.get_locations">
+<code class="descname">get_locations</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/io/dataset/base.html#Partition.get_locations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.io.dataset.base.Partition.get_locations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="libertem.io.dataset.base.Partition.get_tiles">
+<code class="descname">get_tiles</code><span class="sig-paren">(</span><em>crop_to=None</em>, <em>full_frames=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/libertem/io/dataset/base.html#Partition.get_tiles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.io.dataset.base.Partition.get_tiles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a generator over all DataTiles contained in this Partition.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The DataSet may reuse the internal buffer of a tile, so you should
+directly process the tile and not accumulate a number of tiles and then work
+on them.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>crop_to</strong> (<a class="reference internal" href="#libertem.common.slice.Slice" title="libertem.common.slice.Slice"><em>Slice</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)"><em>None</em></a>) – crop to this slice. datasets may impose additional limits to the shape of the slice</p></li>
+<li><p><strong>full_frames</strong> (<em>boolean</em><em>, </em><em>default False</em>) – always read full frames, not stacks of crops of frames</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="libertem.io.dataset.base.Partition.shape">
+<code class="descname">shape</code><a class="headerlink" href="#libertem.io.dataset.base.Partition.shape" title="Permalink to this definition">¶</a></dt>
+<dd><p>the shape of the partition; dimensionality depends on format</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="libertem.io.dataset.base.Reader">
+<em class="property">class </em><code class="descclassname">libertem.io.dataset.base.</code><code class="descname">Reader</code><a class="reference internal" href="_modules/libertem/io/dataset/base.html#Reader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#libertem.io.dataset.base.Reader" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgments.html">Acknowledgments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="citing.html">Citing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="debugging.html">Debugging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="why_python.html">Why Python?</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-libertem.api">Python API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-libertem.common.shape">Internal API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="gsoc.html">GSoC 2019 ideas</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="why_python.html" title="previous chapter">Why Python?</a></li>
+      <li>Next: <a href="gsoc.html" title="next chapter">GSoC 2019 ideas</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, LiberTEM Authors.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/reference.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

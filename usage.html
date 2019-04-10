@@ -1,0 +1,414 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Usage &#8212; LiberTEM 0.2.0.dev0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Architecture" href="architecture.html" />
+    <link rel="prev" title="Installation" href="install.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="usage">
+<h1>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This documentation currently assumes that you are using LiberTEM on a single
+computer. If you want to run on a cluster, please let us know by
+either <a class="reference external" href="https://github.com/liberTEM/LiberTEM/issues">filing an issue</a>
+or by asking on <a class="reference external" href="https://gitter.im/LiberTEM/Lobby">our Gitter channel</a>.</p>
+</div>
+<div class="section" id="starting-the-libertem-server">
+<h2>Starting the LiberTEM Server<a class="headerlink" href="#starting-the-libertem-server" title="Permalink to this headline">¶</a></h2>
+<p>LiberTEM is based on a client-server architecture. To use LiberTEM, you need to
+have the server running on the machine where your data is available.</p>
+<p>After <a class="reference internal" href="install.html"><span class="doc">installing LiberTEM</span></a>, activate the virtualenv or conda environment.</p>
+<p>You can then start the LiberTEM server by running:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>libertem<span class="o">)</span> $ libertem-server
+</pre></div>
+</div>
+<p>By default, this starts the server on <a class="reference external" href="http://localhost:9000">http://localhost:9000</a>, which you can verify by the
+log output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="mi">2018</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">08</span> <span class="mi">13</span><span class="p">:</span><span class="mi">57</span><span class="p">:</span><span class="mi">58</span><span class="p">,</span><span class="mi">266</span><span class="p">]</span> <span class="n">INFO</span> <span class="p">[</span><span class="n">libertem</span><span class="o">.</span><span class="n">web</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">main</span><span class="p">:</span><span class="mi">886</span><span class="p">]</span> <span class="n">listening</span> <span class="n">on</span> <span class="n">localhost</span><span class="p">:</span><span class="mi">9000</span>
+</pre></div>
+</div>
+<p>There are a few command line options available:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Usage</span><span class="p">:</span> <span class="n">libertem</span><span class="o">-</span><span class="n">server</span> <span class="p">[</span><span class="n">OPTIONS</span><span class="p">]</span>
+
+<span class="n">Options</span><span class="p">:</span>
+  <span class="o">--</span><span class="n">port</span> <span class="n">INTEGER</span>  <span class="n">port</span> <span class="n">on</span> <span class="n">which</span> <span class="n">the</span> <span class="n">server</span> <span class="n">should</span> <span class="n">listen</span> <span class="n">on</span>
+  <span class="o">--</span><span class="n">help</span>          <span class="n">Show</span> <span class="n">this</span> <span class="n">message</span> <span class="ow">and</span> <span class="n">exit</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>As there is currently no authentication yet, listening on a different host than
+<cite>127.0.0.1</cite> / <cite>localhost</cite> is disabled. As a workaround, if you want to access LiberTEM from a different computer,
+you can use ssh port forwarding (example command for conda):</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ ssh -L <span class="m">9000</span>:localhost:9000 &lt;remote-hostname&gt; <span class="s2">&quot;source activate libertem; libertem-server&quot;</span>
+</pre></div>
+</div>
+<p>Or, with virtualenv:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ ssh -L <span class="m">9000</span>:localhost:9000 &lt;remote-hostname&gt; <span class="s2">&quot;/path/to/virtualenv/bin/libertem-server&quot;</span>
+</pre></div>
+</div>
+<p>This then makes LiberTEM that is running on <cite>remote-hostname</cite> available on your local host via <a class="reference external" href="http://localhost:9000/">http://localhost:9000/</a></p>
+</div>
+<div class="section" id="the-user-interface">
+<h2>The user interface<a class="headerlink" href="#the-user-interface" title="Permalink to this headline">¶</a></h2>
+<p>After starting the server, you can open the GUI in your browser. By default it will be at <a class="reference external" href="http://localhost:9000">http://localhost:9000</a> .
+At the beginning, the GUI shows a prompt to create a local cluster or connect to a running one. The number of workers is preset with a number
+that will likely give optimal performance on the given machine.</p>
+<div class="figure align-center">
+<img alt="_images/create.png" src="_images/create.png" />
+</div>
+<p>After connection to a cluster, LiberTEM shows a button to start browsing for available files. On a local cluster that’s simply
+the local filesystem.</p>
+<div class="figure align-center">
+<img alt="_images/browse.png" src="_images/browse.png" />
+</div>
+<p>This opens the file browser dialogue. On top it shows the current directory, below it lists all files and subdirectories in that directory. You select an entry by clicking once on it.
+You can move up one directory with the “..” entry on top of the list. The file browser is still very basic. Possible improvements are discussed in <a class="reference external" href="https://github.com/LiberTEM/LiberTEM/issues/83">Issue #83</a>. Contributions are highly appreciated!</p>
+<div class="figure align-center">
+<img alt="_images/open.png" src="_images/open.png" />
+</div>
+<p>After selecting a file, you set the type in the drop-down menu at the top of the dialogue above the file name. After that you set the appropriate parameters that depend on the file type. Clicking on “Load Dataset” will open the file with the selected parameters. The interface and internal logic to find good presets based on file type and available metadata, validate the inputs and display helpful error messages is still work in progress. Contributions are highly appreciated! TODO documentation of all supported file types and their parameters.</p>
+<ul class="simple">
+<li><p>K2IS: You can open any of the files that belong to a K2IS data set and LiberTEM will find the remaining ones, provided they follow the default naming scheme.</p></li>
+</ul>
+<div class="figure align-center">
+<img alt="_images/type.png" src="_images/type.png" />
+</div>
+<p>Once a dataset is loaded, you can add analyses to it. As an example we choose a “Ring” analysis.</p>
+<div class="figure align-center">
+<img alt="_images/add_analysis.png" src="_images/add_analysis.png" />
+</div>
+<p>The GUI shows two windows: On the left it shows the current mask. Directly after adding the analysis, LiberTEM starts calculating an average of all the detector frames. As soon as this is finished, the average is overlaid with the mask to help the user with positioning the virtual detector. The window on the right will later show the result of applying the mask to the data. In the beginning it is empty. The first processing might take a while depending on file size and IO performance. Fast SSDs and enough RAM to keep the working files in the file system cache are highly recommended for a good user experience.</p>
+<p>You can adjust the virtual detector by dragging the handles in the GUI. Below it shows the parameters in numerical form. This is useful to extract positions, for example for scripting.</p>
+<div class="figure align-center">
+<img alt="_images/adjust.png" src="_images/adjust.png" />
+</div>
+<p>After clicking “Apply”, LiberTEM performs the calculation and shows the result in scan coordinates on the right.</p>
+<div class="figure align-center">
+<img alt="_images/apply.png" src="_images/apply.png" />
+</div>
+<p>If you are interested in individual frames rather than the average, you can switch to “Pick” mode in the “Mode” drop-down menu directly below the detector window.</p>
+<div class="figure align-center">
+<img alt="_images/pick.png" src="_images/pick.png" />
+</div>
+<p>In “Pick” mode, a selector appears in the result frame on the right. You can drag it around with the mouse to see the frames live in the left window. The picked coordinates are displayed along with the virtual detector parameters below the frame window on the left.</p>
+<div class="figure align-center">
+<img alt="_images/pick_frame.png" src="_images/pick_frame.png" />
+</div>
+<p>Some analyses, such as the Center of Mass (COM) analysis, can render the result in different ways. You can select the channel in the “Image” drop-down menu below the right window.</p>
+<div class="figure align-center">
+<img alt="_images/image.png" src="_images/image.png" />
+</div>
+<div class="section" id="keyboard-controls">
+<h3>Keyboard controls<a class="headerlink" href="#keyboard-controls" title="Permalink to this headline">¶</a></h3>
+<p>You can use arrow keys to change the coordinate parameters of any analysis. To do this, click on the
+handle you want to modify, and then use the arrow keys to move the handle.
+Hold shift to move in larger steps.</p>
+</div>
+</div>
+<div class="section" id="the-python-api">
+<h2>The Python API<a class="headerlink" href="#the-python-api" title="Permalink to this headline">¶</a></h2>
+<p>The Python API is a concise API for using LiberTEM from Python code. It is suitable both
+for interactive scripting, for example from jupyter notebooks, and for usage
+from within a Python application.</p>
+<p>This is a basic example to load the API, create a local cluster, load a file and run a job. For a complete example on how to use the Python API, please see the
+jupyter notebooks in <a class="reference external" href="https://github.com/LiberTEM/LiberTEM/tree/master/examples">the example directory</a>.</p>
+<p>For a full API reference, please see <a class="reference internal" href="reference.html"><span class="doc">Reference</span></a>.</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="c1"># Disable threading, we already use multiprocessing</span>
+<span class="c1"># to saturate the CPUs</span>
+<span class="c1"># The variables have to be set before any numerics</span>
+<span class="c1"># libraries are loaded.</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;OMP_NUM_THREADS&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;1&quot;</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;MKL_NUM_THREADS&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;1&quot;</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;OPENBLAS_NUM_THREADS&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;1&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="kn">from</span> <span class="nn">libertem</span> <span class="k">import</span> <span class="n">api</span>
+
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
+
+
+<span class="c1"># Protect the entry point.</span>
+<span class="c1"># LiberTEM uses dask, which uses multiprocessing to</span>
+<span class="c1"># start worker processes.</span>
+<span class="c1"># https://docs.python.org/3/library/multiprocessing.html</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+
+    <span class="c1"># api.Context() starts a new local cluster.</span>
+    <span class="c1"># The &quot;with&quot; clause makes sure we shut it down in the end.</span>
+    <span class="k">with</span> <span class="n">api</span><span class="o">.</span><span class="n">Context</span><span class="p">()</span> <span class="k">as</span> <span class="n">ctx</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;C:/Users/weber/Nextcloud/Projects/&#39;</span>
+                    <span class="s1">&#39;Open Pixelated STEM framework/Data/EMPAD/&#39;</span>
+                    <span class="s1">&#39;scan_11_x256_y256.emd&#39;</span><span class="p">)</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
+            <span class="s1">&#39;hdf5&#39;</span><span class="p">,</span>
+            <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span>
+            <span class="n">ds_path</span><span class="o">=</span><span class="s1">&#39;experimental/science_data/data&#39;</span><span class="p">,</span>
+            <span class="n">tileshape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="p">(</span><span class="n">scan_y</span><span class="p">,</span> <span class="n">scan_x</span><span class="p">,</span> <span class="n">detector_y</span><span class="p">,</span> <span class="n">detector_x</span><span class="p">)</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">mask_shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">detector_y</span><span class="p">,</span> <span class="n">detector_x</span><span class="p">)</span>
+
+        <span class="c1"># LiberTEM sends functions that create the masks</span>
+        <span class="c1"># rather than mask data to the workers in order</span>
+        <span class="c1"># to reduce transfers in the cluster.</span>
+        <span class="k">def</span> <span class="nf">mask</span><span class="p">():</span> <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">mask_shape</span><span class="p">)</span>
+
+        <span class="n">job</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">create_mask_analysis</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">ds</span><span class="p">,</span> <span class="n">factories</span><span class="o">=</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+
+        <span class="c1"># Do something useful with the result:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">mask_0</span><span class="o">.</span><span class="n">raw_data</span><span class="p">)</span>
+
+        <span class="c1"># For each mask, one channel is present in the result.</span>
+        <span class="c1"># This may be different for other analyses.</span>
+        <span class="c1"># You can access the result channels by their key on</span>
+        <span class="c1"># the result object:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">mask_0</span><span class="o">.</span><span class="n">raw_data</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+        <span class="c1"># Otherwise, results handle like lists.</span>
+        <span class="c1"># For example, you can iterate over the result channels:</span>
+        <span class="n">raw_result_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">channel</span><span class="o">.</span><span class="n">raw_data</span> <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">result</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="section" id="user-defined-functions">
+<h3>User-defined functions<a class="headerlink" href="#user-defined-functions" title="Permalink to this headline">¶</a></h3>
+<p>A common case for analysing big EM data sets is running a reduction operation
+on each frame of the data set. The user-defined functions (UDF) interface
+of LiberTEM allows users to run their own reduction functions easily, without having
+to worry about parallelizing, I/O, the details of buffer management and so on. As an easy example, let’s
+have a look at a function that simply sums up each frame to a single value:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">libertem.api</span> <span class="kn">import</span> <span class="n">Context</span>
+<span class="kn">from</span> <span class="nn">libertem.common.buffers</span> <span class="kn">import</span> <span class="n">BufferWrapper</span>
+
+ <span class="k">def</span> <span class="nf">make_pixelsum_buffer</span><span class="p">():</span>
+     <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">     Describe the buffers we need to store our results:</span>
+<span class="sd">     kind=&quot;nav&quot; means we want to have a value for each coordinate</span>
+<span class="sd">     in the navigation dimensions. We name our buffer &#39;pixelsum&#39;.</span>
+<span class="sd">     &quot;&quot;&quot;</span>
+     <span class="k">return</span> <span class="p">{</span>
+         <span class="s1">&#39;pixelsum&#39;</span><span class="p">:</span> <span class="n">BufferWrapper</span><span class="p">(</span>
+             <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;nav&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float32&quot;</span>
+         <span class="p">)</span>
+     <span class="p">}</span>
+
+ <span class="k">def</span> <span class="nf">make_pixel_sum</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">pixelsum</span><span class="p">):</span>
+     <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">     Sum up all pixels in this frame and store the result in the pixelsum buffer.</span>
+<span class="sd">     `pixelsum` is a view into the result buffer we defined above, and corresponds to the</span>
+<span class="sd">     entry for the current frame we work on. We don&#39;t have to take care of finding the correct</span>
+<span class="sd">     index for the frame we are processing ourselves.</span>
+<span class="sd">     &quot;&quot;&quot;</span>
+     <span class="n">pixelsum</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+
+ <span class="c1"># run the UDF on a dataset:</span>
+ <span class="n">ctx</span> <span class="o">=</span> <span class="n">Context</span><span class="p">()</span>
+ <span class="n">dataset</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;...&quot;</span><span class="p">)</span>
+ <span class="n">res</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">run_udf</span><span class="p">(</span>
+     <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
+     <span class="n">fn</span><span class="o">=</span><span class="n">make_pixel_sum</span><span class="p">,</span>
+     <span class="n">make_buffers</span><span class="o">=</span><span class="n">make_pixelsum_buffer</span><span class="p">,</span>
+ <span class="p">)</span>
+</pre></div>
+</div>
+<p>Here is another example, demonstrating <cite>kind=”sig”</cite> buffers and the merge function:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">libertem.api</span> <span class="kn">import</span> <span class="n">Context</span>
+<span class="kn">from</span> <span class="nn">libertem.common.buffers</span> <span class="kn">import</span> <span class="n">BufferWrapper</span>
+
+<span class="k">def</span> <span class="nf">make_buffer</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Describe the buffers we need to store our results:</span>
+<span class="sd">    kind=&quot;sig&quot; means we want to have a value for each coordinate</span>
+<span class="sd">    in the signal dimensions (i.e. a value for each pixel of the diffraction patterns).</span>
+<span class="sd">    We name our buffer &#39;maxbuf&#39;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s1">&#39;maxbuf&#39;</span><span class="p">:</span> <span class="n">BufferWrapper</span><span class="p">(</span>
+            <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;sig&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float32&quot;</span>
+        <span class="p">)</span>
+    <span class="p">}</span>
+
+<span class="k">def</span> <span class="nf">make_max</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">maxbuf</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    In this function, we have a frame and the buffer `maxbuf` available, which we declared above.</span>
+<span class="sd">    This function is called for all frames / diffraction patterns in the data set. The maxbuf is</span>
+<span class="sd">    a partial result, and all partial results will later be merged (see below).</span>
+
+<span class="sd">    In this case, we determine the maximum from the current maximum and the current frame, for each</span>
+<span class="sd">    pixel in the diffraction pattern.</span>
+
+<span class="sd">    Notes:</span>
+
+<span class="sd">     - You cannot rely on any particular order of frames this function is called in.</span>
+<span class="sd">     - Your function should be pure, that is, it should not have side effects and should</span>
+<span class="sd">       only depend on it&#39;s input parameters.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">maxbuf</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">maxbuf</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">max_merge</span><span class="p">(</span><span class="n">dest</span><span class="p">,</span> <span class="n">src</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    merge two partial results, from src into dest</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dest</span><span class="p">[</span><span class="s1">&#39;maxbuf&#39;</span><span class="p">][:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">dest</span><span class="p">[</span><span class="s1">&#39;maxbuf&#39;</span><span class="p">],</span> <span class="n">src</span><span class="p">[</span><span class="s1">&#39;maxbuf&#39;</span><span class="p">])</span>
+
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">Context</span><span class="p">()</span>
+<span class="n">ds</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;...&quot;</span><span class="p">)</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">run_udf</span><span class="p">(</span>
+    <span class="n">dataset</span><span class="o">=</span><span class="n">ds</span><span class="p">,</span>
+    <span class="n">fn</span><span class="o">=</span><span class="n">make_max</span><span class="p">,</span>
+    <span class="n">make_buffers</span><span class="o">=</span><span class="n">make_buffer</span><span class="p">,</span>
+    <span class="n">merge</span><span class="o">=</span><span class="n">max_merge</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>For a more complete example, please have a look at the functions implemented in <cite>libertem.udf</cite>,
+for example <cite>blobfinder</cite>. Note that this is a quite new feature and the API is not stable yet!</p>
+</div>
+</div>
+<div class="section" id="from-an-embedded-interpreter">
+<h2>From an embedded interpreter<a class="headerlink" href="#from-an-embedded-interpreter" title="Permalink to this headline">¶</a></h2>
+<p>If LiberTEM is run from within an embedded interpreter, the following steps should be taken. This is necessary for Python scripting in Digital Micrograph, for example.</p>
+<p>The variable <code class="code docutils literal notranslate"><span class="pre">sys.argv</span></code> <a class="reference external" href="https://bugs.python.org/issue32573">may not be set in embedded interpreters</a>, but it is expected by the <code class="code docutils literal notranslate"><span class="pre">multiprocessing</span></code> module when spawning new processes. This workaround guarantees that <code class="code docutils literal notranslate"><span class="pre">sys.argv</span></code> is set <a class="reference external" href="https://github.com/python/cpython/pull/12463">until this is fixed upstream</a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sys</span><span class="p">,</span> <span class="s1">&#39;argv&#39;</span><span class="p">):</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">argv</span>  <span class="o">=</span> <span class="p">[]</span>
+</pre></div>
+</div>
+<p>Furthermore, the <a class="reference external" href="https://docs.python.org/3/library/multiprocessing.html#multiprocessing.set_executable">correct executable for spawning subprocesses</a> has to be set.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">multiprocessing</span><span class="o">.</span><span class="n">set_executable</span><span class="p">(</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">exec_prefix</span><span class="p">,</span> <span class="s1">&#39;pythonw.exe&#39;</span><span class="p">))</span>  <span class="c1"># Windows only</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#starting-the-libertem-server">Starting the LiberTEM Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-user-interface">The user interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-python-api">The Python API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#from-an-embedded-interpreter">From an embedded interpreter</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgments.html">Acknowledgments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="citing.html">Citing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="debugging.html">Debugging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="why_python.html">Why Python?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gsoc.html">GSoC 2019 ideas</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="install.html" title="previous chapter">Installation</a></li>
+      <li>Next: <a href="architecture.html" title="next chapter">Architecture</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, LiberTEM Authors.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/usage.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

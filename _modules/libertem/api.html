@@ -1,0 +1,590 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>libertem.api &#8212; LiberTEM 0.2.0.dev0 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for libertem.api</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">types</span> <span class="k">import</span> <span class="n">MappingProxyType</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+
+<span class="kn">import</span> <span class="nn">psutil</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">libertem.io.dataset</span> <span class="k">import</span> <span class="n">load</span><span class="p">,</span> <span class="n">filetypes</span>
+<span class="kn">from</span> <span class="nn">libertem.io.dataset.base</span> <span class="k">import</span> <span class="n">DataSet</span>
+<span class="kn">from</span> <span class="nn">libertem.job.masks</span> <span class="k">import</span> <span class="n">ApplyMasksJob</span>
+<span class="kn">from</span> <span class="nn">libertem.job.raw</span> <span class="k">import</span> <span class="n">PickFrameJob</span>
+<span class="kn">from</span> <span class="nn">libertem.job.base</span> <span class="k">import</span> <span class="n">Job</span>
+<span class="kn">from</span> <span class="nn">libertem.common</span> <span class="k">import</span> <span class="n">Slice</span><span class="p">,</span> <span class="n">Shape</span>
+<span class="kn">from</span> <span class="nn">libertem.executor.dask</span> <span class="k">import</span> <span class="n">DaskJobExecutor</span>
+<span class="kn">from</span> <span class="nn">libertem.analysis.raw</span> <span class="k">import</span> <span class="n">PickFrameAnalysis</span>
+<span class="kn">from</span> <span class="nn">libertem.analysis.com</span> <span class="k">import</span> <span class="n">COMAnalysis</span>
+<span class="kn">from</span> <span class="nn">libertem.analysis.disk</span> <span class="k">import</span> <span class="n">DiskMaskAnalysis</span>
+<span class="kn">from</span> <span class="nn">libertem.analysis.ring</span> <span class="k">import</span> <span class="n">RingMaskAnalysis</span>
+<span class="kn">from</span> <span class="nn">libertem.analysis.sum</span> <span class="k">import</span> <span class="n">SumAnalysis</span>
+<span class="kn">from</span> <span class="nn">libertem.analysis.point</span> <span class="k">import</span> <span class="n">PointMaskAnalysis</span>
+<span class="kn">from</span> <span class="nn">libertem.analysis.masks</span> <span class="k">import</span> <span class="n">MasksAnalysis</span>
+<span class="kn">from</span> <span class="nn">libertem.analysis.base</span> <span class="k">import</span> <span class="n">BaseAnalysis</span>
+<span class="kn">from</span> <span class="nn">libertem.udf</span> <span class="k">import</span> <span class="n">make_udf_tasks</span><span class="p">,</span> <span class="n">merge_assign</span>
+
+
+<div class="viewcode-block" id="Context"><a class="viewcode-back" href="../../reference.html#libertem.api.Context">[docs]</a><span class="k">class</span> <span class="nc">Context</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Context is the main entry point of the LiberTEM API. It contains</span>
+<span class="sd">    methods for loading datasets, creating jobs on them and running</span>
+<span class="sd">    them.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Context.__init__"><a class="viewcode-back" href="../../reference.html#libertem.api.Context.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">executor</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a new context. In the background, this creates a suitable</span>
+<span class="sd">        executor and spins up a local Dask cluster.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">executor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">executor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_local_executor</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">executor</span> <span class="o">=</span> <span class="n">executor</span></div>
+
+<div class="viewcode-block" id="Context.load"><a class="viewcode-back" href="../../reference.html#libertem.api.Context.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filetype</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataSet</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load a `DataSet`. As it doesn&#39;t load the whole data into RAM at once,</span>
+<span class="sd">        you can load and process datasets that are bigger than your available RAM.</span>
+<span class="sd">        Using fast storage (i.e. SSD) is advisable.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        filetype : str</span>
+<span class="sd">            one of: %(types)s</span>
+<span class="sd">        args</span>
+<span class="sd">            passed on to the DataSet implementation</span>
+<span class="sd">        kwargs</span>
+<span class="sd">            passed on to the DataSet implementation</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        DataSet</span>
+<span class="sd">            the loaded dataset</span>
+
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+
+<span class="sd">        Additional parameters are passed to the concrete DataSet implementation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># delegate to libertem.io.dataset.load:</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">executor</span><span class="o">.</span><span class="n">run_function</span><span class="p">(</span><span class="n">load</span><span class="p">,</span> <span class="n">filetype</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">executor</span><span class="o">.</span><span class="n">run_function</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">initialize</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">executor</span><span class="o">.</span><span class="n">run_function</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">check_valid</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ds</span></div>
+
+    <span class="n">load</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="n">load</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">%</span> <span class="p">{</span><span class="s2">&quot;types&quot;</span><span class="p">:</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">filetypes</span><span class="o">.</span><span class="n">keys</span><span class="p">())}</span>
+
+<div class="viewcode-block" id="Context.create_mask_job"><a class="viewcode-back" href="../../reference.html#libertem.api.Context.create_mask_job">[docs]</a>    <span class="k">def</span> <span class="nf">create_mask_job</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factories</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">use_sparse</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a low-level mask application job. Each factory function should, when called,</span>
+<span class="sd">        return a numpy array with the same shape as frames in the dataset (so dataset.shape.sig).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        factories</span>
+<span class="sd">            list of functions that take no arguments and create masks. The returned masks can be</span>
+<span class="sd">            numpy arrays or scipy.sparse matrices. The mask factories should not reference large</span>
+<span class="sd">            objects because they can create significant overheads when they are pickled and</span>
+<span class="sd">            unpickled.</span>
+<span class="sd">        dataset</span>
+<span class="sd">            dataset to work on</span>
+<span class="sd">        use_sparse</span>
+<span class="sd">            * None (default): Use sparse matrix multiplication if all factory functions return a \</span>
+<span class="sd">            sparse mask, otherwise convert all masks to dense matrices and use dense matrix \</span>
+<span class="sd">            multiplication</span>
+<span class="sd">            * True: Convert all masks to sparse matrices.</span>
+<span class="sd">            * False: Convert all masks to dense matrices.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from libertem.api import Context</span>
+<span class="sd">        &gt;&gt;&gt; ctx = Context()</span>
+<span class="sd">        &gt;&gt;&gt; ds = ctx.load(&quot;...&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; # Use intermediate variables instead of referencing</span>
+<span class="sd">        &gt;&gt;&gt; # large complex objects like a dataset within the</span>
+<span class="sd">        &gt;&gt;&gt; # factory function</span>
+<span class="sd">        &gt;&gt;&gt; shape = dataset.shape.sig</span>
+<span class="sd">        &gt;&gt;&gt; job = ctx.create_mask_job(</span>
+<span class="sd">        ... factories=[lambda: np.ones(shape)],</span>
+<span class="sd">        ... dataset=dataset)</span>
+<span class="sd">        &gt;&gt;&gt; result = ctx.run(job)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ApplyMasksJob</span><span class="p">(</span>
+            <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span> <span class="n">mask_factories</span><span class="o">=</span><span class="n">factories</span><span class="p">,</span> <span class="n">use_sparse</span><span class="o">=</span><span class="n">use_sparse</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Context.create_mask_analysis"><a class="viewcode-back" href="../../reference.html#libertem.api.Context.create_mask_analysis">[docs]</a>    <span class="k">def</span> <span class="nf">create_mask_analysis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factories</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">use_sparse</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a mask application analysis. Each factory function should, when called,</span>
+<span class="sd">        return a numpy array with the same shape as frames in the dataset (so dataset.shape.sig).</span>
+
+<span class="sd">        This is a more high-level method than `create_mask_job` and differs in the way the result</span>
+<span class="sd">        is returned. With `create_mask_job`, it is a single numpy array, here we split it up for</span>
+<span class="sd">        each mask we apply, make some default visualization available etc.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        factories</span>
+<span class="sd">            list of functions that take no arguments and create masks. The returned masks can be</span>
+<span class="sd">            numpy arrays or scipy.sparse matrices. The mask factories should not reference large</span>
+<span class="sd">            objects because they can create significant overheads when they are pickled and</span>
+<span class="sd">            unpickled.</span>
+<span class="sd">        dataset</span>
+<span class="sd">            dataset to work on</span>
+<span class="sd">        use_sparse</span>
+<span class="sd">            * None (default): Use sparse matrix multiplication if all factory functions return a \</span>
+<span class="sd">            sparse mask, otherwise convert all masks to dense matrices and use dense matrix \</span>
+<span class="sd">            multiplication</span>
+<span class="sd">            * True: Convert all masks to sparse matrices.</span>
+<span class="sd">            * False: Convert all masks to dense matrices.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from libertem.api import Context</span>
+<span class="sd">        &gt;&gt;&gt; ctx = Context()</span>
+<span class="sd">        &gt;&gt;&gt; ds = ctx.load(&quot;...&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; # Use intermediate variables instead of referencing</span>
+<span class="sd">        &gt;&gt;&gt; # large complex objects like a dataset within the</span>
+<span class="sd">        &gt;&gt;&gt; # factory function</span>
+<span class="sd">        &gt;&gt;&gt; shape = dataset.shape.sig</span>
+<span class="sd">        &gt;&gt;&gt; job = ctx.create_mask_analysis(</span>
+<span class="sd">        ... factories=[lambda: np.ones(shape)],</span>
+<span class="sd">        ... dataset=dataset)</span>
+<span class="sd">        &gt;&gt;&gt; result = ctx.run(job)</span>
+<span class="sd">        &gt;&gt;&gt; result.mask_0.raw_data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">MasksAnalysis</span><span class="p">(</span>
+            <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
+            <span class="n">parameters</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;factories&quot;</span><span class="p">:</span> <span class="n">factories</span><span class="p">,</span> <span class="s2">&quot;use_sparse&quot;</span><span class="p">:</span> <span class="n">use_sparse</span><span class="p">},</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Context.create_com_analysis"><a class="viewcode-back" href="../../reference.html#libertem.api.Context.create_com_analysis">[docs]</a>    <span class="k">def</span> <span class="nf">create_com_analysis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">cx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cy</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">mask_radius</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform a center-of-mass (first moment) analysis, possibly masked.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dataset</span>
+<span class="sd">            the dataset to work on</span>
+<span class="sd">        cx</span>
+<span class="sd">            reference center x value</span>
+<span class="sd">        cy</span>
+<span class="sd">            reference center y value</span>
+<span class="sd">        mask_radius</span>
+<span class="sd">            mask out intensity outside of mask_radius from (cy, cx)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">dataset</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">nav</span><span class="o">.</span><span class="n">dims</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;incompatible dataset: need two navigation dimensions&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dataset</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">sig</span><span class="o">.</span><span class="n">dims</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;incompatible dataset: need two signal dimensions&quot;</span><span class="p">)</span>
+        <span class="n">loc</span> <span class="o">=</span> <span class="nb">locals</span><span class="p">()</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">loc</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;cx&#39;</span><span class="p">,</span> <span class="s1">&#39;cy&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">loc</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">mask_radius</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;r&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mask_radius</span>
+        <span class="n">analysis</span> <span class="o">=</span> <span class="n">COMAnalysis</span><span class="p">(</span>
+            <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="n">parameters</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">analysis</span></div>
+
+<div class="viewcode-block" id="Context.create_disk_analysis"><a class="viewcode-back" href="../../reference.html#libertem.api.Context.create_disk_analysis">[docs]</a>    <span class="k">def</span> <span class="nf">create_disk_analysis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">cx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cy</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Integrate over a disk (i.e. filled circle)</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dataset</span>
+<span class="sd">            the dataset to work on</span>
+<span class="sd">        cx</span>
+<span class="sd">            center x value</span>
+<span class="sd">        cy</span>
+<span class="sd">            center y value</span>
+<span class="sd">        r</span>
+<span class="sd">            radius of the disk</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">dataset</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">sig</span><span class="o">.</span><span class="n">dims</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;incompatible dataset: need two signal dimensions&quot;</span><span class="p">)</span>
+        <span class="n">loc</span> <span class="o">=</span> <span class="nb">locals</span><span class="p">()</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">loc</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;cx&#39;</span><span class="p">,</span> <span class="s1">&#39;cy&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">loc</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">DiskMaskAnalysis</span><span class="p">(</span>
+            <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="n">parameters</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Context.create_ring_analysis"><a class="viewcode-back" href="../../reference.html#libertem.api.Context.create_ring_analysis">[docs]</a>    <span class="k">def</span> <span class="nf">create_ring_analysis</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">cx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cy</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ri</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ro</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Integrate over a ring</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dataset</span>
+<span class="sd">            the dataset to work on</span>
+<span class="sd">        cx</span>
+<span class="sd">            center x value</span>
+<span class="sd">        cy</span>
+<span class="sd">            center y value</span>
+<span class="sd">        ri</span>
+<span class="sd">            inner radius</span>
+<span class="sd">        ro</span>
+<span class="sd">            outer radius</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">dataset</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">sig</span><span class="o">.</span><span class="n">dims</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;incompatible dataset: need two signal dimensions&quot;</span><span class="p">)</span>
+        <span class="n">loc</span> <span class="o">=</span> <span class="nb">locals</span><span class="p">()</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">loc</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;cx&#39;</span><span class="p">,</span> <span class="s1">&#39;cy&#39;</span><span class="p">,</span> <span class="s1">&#39;ri&#39;</span><span class="p">,</span> <span class="s1">&#39;ro&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">loc</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">RingMaskAnalysis</span><span class="p">(</span>
+            <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="n">parameters</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Context.create_point_analysis"><a class="viewcode-back" href="../../reference.html#libertem.api.Context.create_point_analysis">[docs]</a>    <span class="k">def</span> <span class="nf">create_point_analysis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Select the pixel with coords (y, x) from each frame</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">dataset</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">nav</span><span class="o">.</span><span class="n">dims</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;incompatible dataset: need two navigation dimensions&quot;</span><span class="p">)</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;cx&#39;</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span>
+            <span class="s1">&#39;cy&#39;</span><span class="p">:</span> <span class="n">y</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">k</span><span class="p">:</span> <span class="n">v</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">PointMaskAnalysis</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="n">parameters</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Context.create_sum_analysis"><a class="viewcode-back" href="../../reference.html#libertem.api.Context.create_sum_analysis">[docs]</a>    <span class="k">def</span> <span class="nf">create_sum_analysis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sum of all signal elements</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dataset</span>
+<span class="sd">            the dataset to work on</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">SumAnalysis</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="p">{})</span></div>
+
+<div class="viewcode-block" id="Context.create_pick_job"><a class="viewcode-back" href="../../reference.html#libertem.api.Context.create_pick_job">[docs]</a>    <span class="k">def</span> <span class="nf">create_pick_job</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">origin</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Pick raw data from `origin` with the size defined in `shape`.</span>
+
+<span class="sd">        NOTE: if you just want to read single frames, it is easier to use `create_pick_analysis`.</span>
+
+<span class="sd">        NOTE: It is not efficient to use this method on large parts of datasets, please consider</span>
+<span class="sd">        implementing an analysis instead.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dataset</span>
+<span class="sd">            The dataset to work on</span>
+<span class="sd">        origin</span>
+<span class="sd">            Where to start reading. You can either specify all dimensions, or only nav dimensions,</span>
+<span class="sd">            in which case the signal is read starting from (0, ..., 0).</span>
+<span class="sd">        shape</span>
+<span class="sd">            The shape of the data to read. If None, read a &quot;frame&quot; or single signal element</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :py:class:`numpy.ndarray`</span>
+<span class="sd">            the raw data as numpy array</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from libertem.api import Context</span>
+<span class="sd">        &gt;&gt;&gt; ctx = Context()</span>
+<span class="sd">        &gt;&gt;&gt; ds = ctx.load(&quot;...&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; origin = (7, 8, 9)</span>
+<span class="sd">        &gt;&gt;&gt; job = create_pick_job(dataset=ds, origin=origin)</span>
+<span class="sd">        &gt;&gt;&gt; result = ctx.run(job)</span>
+<span class="sd">        &gt;&gt;&gt; assert result.shape == ds.shape.sig</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># FIXME: this method works well if we can flatten to 3D</span>
+        <span class="c1"># need vectorized I/O for general case</span>
+        <span class="n">raw_shape</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">raw_shape</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">origin</span><span class="p">)</span> <span class="o">==</span> <span class="n">dataset</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">nav</span><span class="o">.</span><span class="n">dims</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">raw_shape</span><span class="o">.</span><span class="n">dims</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">origin</span><span class="p">)</span> <span class="ow">and</span> <span class="n">raw_shape</span><span class="o">.</span><span class="n">nav</span><span class="o">.</span><span class="n">dims</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">origin</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ravel_multi_index</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">dataset</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">nav</span><span class="p">),)</span>
+            <span class="n">origin</span> <span class="o">=</span> <span class="n">origin</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">([</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">dataset</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">sig</span><span class="o">.</span><span class="n">dims</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">origin</span><span class="p">)</span> <span class="o">==</span> <span class="n">dataset</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">dims</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">raw_shape</span><span class="o">.</span><span class="n">dims</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">origin</span><span class="p">)</span> <span class="ow">and</span> <span class="n">raw_shape</span><span class="o">.</span><span class="n">nav</span><span class="o">.</span><span class="n">dims</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">origin</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ravel_multi_index</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">dataset</span><span class="o">.</span><span class="n">shape</span><span class="p">),)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;incompatible dataset: origin needs to match dataset shape (</span><span class="si">%r</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="n">dataset</span><span class="o">.</span><span class="n">shape</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">shape</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">raw_shape</span><span class="o">.</span><span class="n">nav</span><span class="o">.</span><span class="n">dims</span><span class="p">)</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">raw_shape</span><span class="o">.</span><span class="n">sig</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="o">!=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">dims</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;incompatible: shape needs to match the dataset shape&quot;</span>
+                <span class="p">)</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="n">Shape</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">sig_dims</span><span class="o">=</span><span class="n">raw_shape</span><span class="o">.</span><span class="n">sig</span><span class="o">.</span><span class="n">dims</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">raw_shape</span><span class="o">.</span><span class="n">dims</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="ow">and</span> <span class="n">raw_shape</span><span class="o">.</span><span class="n">nav</span><span class="o">.</span><span class="n">dims</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">shape</span> <span class="o">=</span> <span class="n">shape</span><span class="o">.</span><span class="n">flatten_nav</span><span class="p">()</span>
+        <span class="n">slice_</span> <span class="o">=</span> <span class="n">Slice</span><span class="p">(</span><span class="n">origin</span><span class="o">=</span><span class="n">origin</span><span class="p">,</span>
+                       <span class="n">shape</span><span class="o">=</span><span class="n">Shape</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">sig_dims</span><span class="o">=</span><span class="n">raw_shape</span><span class="o">.</span><span class="n">sig</span><span class="o">.</span><span class="n">dims</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">PickFrameJob</span><span class="p">(</span>
+            <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
+            <span class="n">slice_</span><span class="o">=</span><span class="n">slice_</span><span class="p">,</span>
+            <span class="n">squeeze</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Context.create_pick_analysis"><a class="viewcode-back" href="../../reference.html#libertem.api.Context.create_pick_analysis">[docs]</a>    <span class="k">def</span> <span class="nf">create_pick_analysis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Pick a single frame / signal element from (z, y, x). Number of parameters</span>
+<span class="sd">        must match number of navigation dimensions in the dataset, for example if</span>
+<span class="sd">        you have a 4D dataset with two signal dimensions and two navigation dimensions,</span>
+<span class="sd">        you need to specify x and y.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dataset</span>
+<span class="sd">            The dataset to work on</span>
+<span class="sd">        x</span>
+<span class="sd">            x coordinate</span>
+<span class="sd">        y</span>
+<span class="sd">            y coordinate</span>
+<span class="sd">        z</span>
+<span class="sd">            z coordinate</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :py:class:`numpy.ndarray`</span>
+<span class="sd">            the frame as numpy array</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from libertem.api import Context</span>
+<span class="sd">        &gt;&gt;&gt; ctx = Context()</span>
+<span class="sd">        &gt;&gt;&gt; ds = ctx.load(&quot;...&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; origin = (7, 8, 9)</span>
+<span class="sd">        &gt;&gt;&gt; job = create_pick_analysis(dataset=ds, x=9, y=8, z=7)</span>
+<span class="sd">        &gt;&gt;&gt; result = ctx.run(job)</span>
+<span class="sd">        &gt;&gt;&gt; assert result.intensity.raw_data.shape == ds.shape.sig</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">loc</span> <span class="o">=</span> <span class="nb">locals</span><span class="p">()</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">loc</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">loc</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">PickFrameAnalysis</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="n">parameters</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Context.run"><a class="viewcode-back" href="../../reference.html#libertem.api.Context.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Job</span><span class="p">,</span> <span class="n">BaseAnalysis</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run the given `Job` or `Analysis` and return the result data.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        job</span>
+<span class="sd">            the job or analysis to run</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">analysis</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">job</span><span class="p">,</span> <span class="s2">&quot;get_job&quot;</span><span class="p">):</span>
+            <span class="n">analysis</span> <span class="o">=</span> <span class="n">job</span>
+            <span class="n">job_to_run</span> <span class="o">=</span> <span class="n">analysis</span><span class="o">.</span><span class="n">get_job</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">job_to_run</span> <span class="o">=</span> <span class="n">job</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="n">job_to_run</span><span class="o">.</span><span class="n">get_result_buffer</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">tiles</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">executor</span><span class="o">.</span><span class="n">run_job</span><span class="p">(</span><span class="n">job_to_run</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">tile</span> <span class="ow">in</span> <span class="n">tiles</span><span class="p">:</span>
+                <span class="n">tile</span><span class="o">.</span><span class="n">reduce_into_result</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">analysis</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">analysis</span><span class="o">.</span><span class="n">get_results</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span></div>
+
+<div class="viewcode-block" id="Context.run_udf"><a class="viewcode-back" href="../../reference.html#libertem.api.Context.run_udf">[docs]</a>    <span class="k">def</span> <span class="nf">run_udf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">fn</span><span class="p">,</span> <span class="n">make_buffers</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">merge</span><span class="o">=</span><span class="n">merge_assign</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run `fn` on `dataset`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dataset</span>
+<span class="sd">            The dataset to work on</span>
+
+<span class="sd">        init</span>
+<span class="sd">            Function to perform initialization. Should return a dict of variables that will</span>
+<span class="sd">            be shared between calls calls of your function. Note that these variables should</span>
+<span class="sd">            be considered read-only; they are not meant as a way to communicate between calls.</span>
+
+<span class="sd">        make_buffers</span>
+<span class="sd">            Function that returns a dict, mapping buffer names to BufferWrapper instances</span>
+
+<span class="sd">        fn</span>
+<span class="sd">            The function to run on the dataset. It needs to accept the frame as keyword argument.</span>
+<span class="sd">            Additionally, it needs to have a parameter for each buffer created in make_buffers,</span>
+<span class="sd">            and also for each variable returned from the init function.</span>
+
+<span class="sd">        merge</span>
+<span class="sd">            A function merging a partial result into the final result buffer. By default it just</span>
+<span class="sd">            performs assignment.</span>
+
+
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        This example creates a &quot;sum image&quot;, where all pixels of each</span>
+<span class="sd">        diffraction pattern are summed up:</span>
+
+<span class="sd">        &gt;&gt;&gt; def my_buffers():</span>
+<span class="sd">        &gt;&gt;&gt;     return {</span>
+<span class="sd">        &gt;&gt;&gt;         &#39;pixelsum&#39;: BufferWrapper(</span>
+<span class="sd">        &gt;&gt;&gt;             kind=&quot;nav&quot;, dtype=&quot;float32&quot;</span>
+<span class="sd">        &gt;&gt;&gt;         )</span>
+<span class="sd">        &gt;&gt;&gt;     }</span>
+
+<span class="sd">        &gt;&gt;&gt; def my_frame_fn(frame, pixelsum):</span>
+<span class="sd">        &gt;&gt;&gt;     pixelsum[:] = np.sum(frame)</span>
+
+<span class="sd">        &gt;&gt;&gt; ctx = Context()</span>
+<span class="sd">        &gt;&gt;&gt; ds = ctx.load(...)</span>
+<span class="sd">        &gt;&gt;&gt; res = ctx.run_udf(</span>
+<span class="sd">        &gt;&gt;&gt;     dataset=ds,</span>
+<span class="sd">        &gt;&gt;&gt;     fn=my_frame_fn,</span>
+<span class="sd">        &gt;&gt;&gt;     make_buffers=my_buffers,</span>
+<span class="sd">        &gt;&gt;&gt; )</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result_buffers</span> <span class="o">=</span> <span class="n">make_buffers</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">buf</span> <span class="ow">in</span> <span class="n">result_buffers</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">buf</span><span class="o">.</span><span class="n">set_shape_ds</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+            <span class="n">buf</span><span class="o">.</span><span class="n">allocate</span><span class="p">()</span>
+        <span class="n">cancel_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
+
+        <span class="n">tasks</span> <span class="o">=</span> <span class="n">make_udf_tasks</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">fn</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span> <span class="n">make_buffers</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">partition_result_buffers</span><span class="p">,</span> <span class="n">partition</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">executor</span><span class="o">.</span><span class="n">run_tasks</span><span class="p">(</span><span class="n">tasks</span><span class="p">,</span> <span class="n">cancel_id</span><span class="p">):</span>
+            <span class="n">buffer_views</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">buf</span> <span class="ow">in</span> <span class="n">result_buffers</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">buffer_views</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">buf</span><span class="o">.</span><span class="n">get_view_for_partition</span><span class="p">(</span><span class="n">partition</span><span class="o">=</span><span class="n">partition</span><span class="p">)</span>
+            <span class="n">buffers</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">b</span><span class="o">.</span><span class="n">data</span>
+                       <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">partition_result_buffers</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+            <span class="n">merge</span><span class="p">(</span><span class="n">dest</span><span class="o">=</span><span class="n">MappingProxyType</span><span class="p">(</span><span class="n">buffer_views</span><span class="p">),</span> <span class="n">src</span><span class="o">=</span><span class="n">MappingProxyType</span><span class="p">(</span><span class="n">buffers</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">result_buffers</span></div>
+
+    <span class="k">def</span> <span class="nf">_create_local_executor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cores</span> <span class="o">=</span> <span class="n">psutil</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">(</span><span class="n">logical</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cores</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cores</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="k">return</span> <span class="n">DaskJobExecutor</span><span class="o">.</span><span class="n">make_local</span><span class="p">(</span>
+            <span class="n">cluster_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;threads_per_worker&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;n_workers&quot;</span><span class="p">:</span> <span class="n">cores</span><span class="p">}</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">executor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../acknowledgments.html">Acknowledgments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../citing.html">Citing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../debugging.html">Debugging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../why_python.html">Why Python?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../gsoc.html">GSoC 2019 ideas</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, LiberTEM Authors.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

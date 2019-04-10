@@ -1,0 +1,241 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>LiberTEM - Open Pixelated STEM platform &#8212; LiberTEM 0.2.0.dev0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation" href="install.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="libertem-open-pixelated-stem-platform">
+<h1>LiberTEM - Open Pixelated STEM platform<a class="headerlink" href="#libertem-open-pixelated-stem-platform" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="https://gitter.im/LiberTEM/Lobby"><img alt="gitter" src="https://badges.gitter.im/Join%20Chat.svg" /></a> <a class="reference external" href="https://travis-ci.org/LiberTEM/LiberTEM"><img alt="travis" src="https://api.travis-ci.org/LiberTEM/LiberTEM.svg?branch=master" /></a> <a class="reference external" href="https://ci.appveyor.com/project/sk1p/libertem"><img alt="appveyor" src="https://ci.appveyor.com/api/projects/status/wokeo6ee2frq481m?svg=true" /></a> <a class="reference external" href="https://doi.org/10.5281/zenodo.1478763"><img alt="zenodo" src="https://zenodo.org/badge/DOI/10.5281/zenodo.1478763.svg" /></a></p>
+<p>LiberTEM is an open source platform for high-throughput distributed processing of <a class="reference external" href="https://en.wikipedia.org/wiki/Scanning_transmission_electron_microscopy#Universal_detectors">pixelated</a> scanning transmission electron microscopy (<a class="reference external" href="https://en.wikipedia.org/wiki/Scanning_transmission_electron_microscopy">STEM</a>) data.</p>
+<p>It is designed for high throughput and scalability on PCs, single server nodes, clusters and cloud services. On clusters it can use the Hadoop file system with fast distributed
+local storage on high-performance SSDs. That way it achieves very high collective IO performance on a compact and cost-efficient system built from stock components.
+With cached file system reads it can reach a throughput of up to 14 GB/s per processing node with a quad-core CPU.</p>
+<p>LiberTEM is supported on Linux, Mac OS X and Windows. Other platforms
+that allow installation of Python 3 and the required packages will likely work as well. The GUI is running
+in a web browser.</p>
+<p>LiberTEM currently opens most file formats used for pixelated STEM:</p>
+<ul class="simple">
+<li><p>Raw binary files, for example for the Thermo Fisher EMPAD detector</p></li>
+<li><p>Quantum Detectors MIB format (currently alpha, more testing and sample files highly appreciated)</p></li>
+<li><p>Nanomegas .blo block files</p></li>
+<li><p>Gatan K2IS raw format (currently beta)</p></li>
+<li><p>FRMS6 from PNDetector pnCCD cameras (currently alpha, gain correction still needs UI changes)</p></li>
+<li><p>FEI SER files (via <a class="reference external" href="https://github.com/ercius/openNCEM">openNCEM</a>)</p></li>
+<li><p>HDF5-based formats such as Hyperspy files, NeXus and EMD</p></li>
+<li><p>Please contact us if you are interested in support for an additional format!</p></li>
+</ul>
+<p>The 0.1 release implements anything that can be done by applying masks to each detector frame,
+for example the numerous virtual detector methods (virtual bright field, virtual HAADF, …) or center of mass.</p>
+<p>The GUI of the 0.1 release allows interactive analysis and data exploration with basic virtual
+detectors, center of mass and display of individual detector frames.</p>
+<p>The Python API can be used for more complex operations with arbitrary masks and other features like data export. There are example Jupyter notebooks available in the <a class="reference external" href="https://github.com/LiberTEM/LiberTEM/blob/master/examples">examples directory</a>.
+If you are having trouble running the examples, please let us know, either by filing an issue
+or by <a class="reference external" href="https://gitter.im/LiberTEM/Lobby">joining our Gitter chat</a>.</p>
+<p>LiberTEM is suitable as a high-performance processing backend for other applications, including live data streams. <a class="reference external" href="https://gitter.im/LiberTEM/Lobby">Contact us</a> if you are interested!</p>
+<p>Deployment as a single-node system for a local user is thoroughly tested and can be considered stable in the 0.1 release. Deployment on a cluster is
+experimental and still requires some additional work, see <a class="reference external" href="https://github.com/LiberTEM/LiberTEM/issues/105">Issue #105</a>.</p>
+<p>LiberTEM is evolving rapidly and prioritizes features following user demand and contributions. In the future we’d like to implement live acquisition, and more analysis methods for all applications of pixelated STEM.
+If you like to influence the direction this
+project is taking, or if you’d like to contribute, please join our <a class="reference external" href="https://gitter.im/LiberTEM/Lobby">gitter chat</a>,
+our <a class="reference external" href="https://groups.google.com/forum/#!forum/libertem-dev">development mailing list</a>,
+and our <a class="reference external" href="https://groups.google.com/forum/#!forum/libertem">general mailing list</a>.</p>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>The short version:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ virtualenv -p python3.6 ~/libertem-venv/
+$ <span class="nb">source</span> ~/libertem-venv/bin/activate
+<span class="o">(</span>libertem<span class="o">)</span> $ pip install libertem<span class="o">[</span>torch<span class="o">]</span>
+</pre></div>
+</div>
+<p>Please see <a class="reference external" href="https://libertem.github.io/LiberTEM/install.html">our documentation</a> for details!</p>
+</div>
+<div class="section" id="license">
+<h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
+<p>LiberTEM is licensed under GPLv3. The I/O parts are also available under the MIT license, please see LICENSE files in the subdirectories for details.</p>
+</div>
+</div>
+<div class="section" id="documentation">
+<h1>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="install.html#linux-and-mac-os-x">Linux and Mac OS X</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#windows">Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#jupyter">Jupyter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#jupyterhub">JupyterHub</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#troubleshooting">Troubleshooting</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#starting-the-libertem-server">Starting the LiberTEM Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#the-user-interface">The user interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#the-python-api">The Python API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#from-an-embedded-interpreter">From an embedded interpreter</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="architecture.html#mathematical-expression-for-applying-masks">Mathematical expression for applying masks</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#running-the-tests">Running the Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#code-coverage">Code coverage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#code-style">Code Style</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#building-the-documentation">Building the Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#building-the-client">Building the client</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#release-checklist">Release checklist</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgments.html">Acknowledgments</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="acknowledgments.html#creators">Creators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="acknowledgments.html#contributions">Contributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="acknowledgments.html#notable-upstream-projects">Notable Upstream Projects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="acknowledgments.html#funding">Funding</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="citing.html">Citing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="debugging.html">Debugging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="why_python.html">Why Python?</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="why_python.html#isn-t-python-slow">Isn’t Python slow?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="why_python.html#but-what-about-multicore-scaling">But what about (multicore) scaling?</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#module-libertem.api">Python API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#module-libertem.common.shape">Internal API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="gsoc.html">GSoC 2019 ideas</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="gsoc.html#why-libertem">Why LiberTEM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gsoc.html#about-us">About us</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gsoc.html#how-to-reach-us">How to reach us</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gsoc.html#getting-started">Getting started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gsoc.html#writing-your-gsoc-application">Writing your GSoC application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gsoc.html#project-ideas">Project Ideas</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="indices-and-tables">
+<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="#">
+    <img class="logo" src="_static/logo.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgments.html">Acknowledgments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="citing.html">Citing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="debugging.html">Debugging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="why_python.html">Why Python?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gsoc.html">GSoC 2019 ideas</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+      <li>Next: <a href="install.html" title="next chapter">Installation</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, LiberTEM Authors.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
